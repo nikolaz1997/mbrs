@@ -35,14 +35,14 @@ public class Reader {
 
             // Loop over all packaged elements and add id and Name
             // When needing a type for an Enum or Association easily access the map to get the correct type
-            entityIdsAndNames = EntityParser.parseEntities(root);
+            entityIdsAndNames = EntityParser.parseInHashMap(root);
 //            for (Map.Entry<String, String> entry : entityIdsAndNames.entrySet()) {
 //                System.out.println(entry.getKey());
 //                System.out.println(entry.getValue());
 //            }
 
             // Loop over all packaged elements and extract associations, so later we can determine the relations
-            associations = AssociationParser.parseAssociations(root, entityIdsAndNames);
+            associations = AssociationParser.parse(root, entityIdsAndNames);
 //            for (var ass : associations) {
 //                System.out.println(ass);
 //            }
@@ -127,7 +127,9 @@ public class Reader {
                                             ? foundAssociation.memberOne.dataType
                                             : foundAssociation.memberOne.dataType + "s";
 
-                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, "TEST"));
+                                    String association = calculateAssociation(foundAssociation.memberOne.associationType, foundAssociation.memberTwo.associationType);
+
+                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, association));
                                 } else {
                                     String typeOfAssociationProperty = foundAssociation.memberTwo.associationType == AssociationType.One
                                             ? foundAssociation.memberTwo.dataType
@@ -137,8 +139,9 @@ public class Reader {
                                             ? foundAssociation.memberTwo.dataType
                                             : foundAssociation.memberTwo.dataType + "s";
 
+                                    String association = calculateAssociation(foundAssociation.memberTwo.associationType, foundAssociation.memberOne.associationType);
 
-                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, "TEST"));
+                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, association));
                                 }
                             }
                         }
@@ -162,6 +165,22 @@ public class Reader {
                 }
             }
         }
+    }
+
+    private static String calculateAssociation(AssociationType associationTypeOne, AssociationType associationTypeTwo) {
+        if (associationTypeOne == AssociationType.One && associationTypeTwo == AssociationType.One)
+            return "OneToOne";
+
+        if (associationTypeOne == AssociationType.One && associationTypeTwo == AssociationType.Many)
+            return "ManyToOne";
+
+        if (associationTypeOne == AssociationType.Many && associationTypeTwo == AssociationType.One)
+            return "OneToMany";
+
+        if (associationTypeOne == AssociationType.Many && associationTypeTwo == AssociationType.Many)
+            return "ManyToMany";
+
+        return "Error";
     }
 
     private static void generateSpringBootApplicationFile() {

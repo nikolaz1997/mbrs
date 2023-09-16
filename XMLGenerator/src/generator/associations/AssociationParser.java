@@ -8,7 +8,7 @@ import org.w3c.dom.NodeList;
 import java.util.*;
 
 public class AssociationParser {
-    public static List<Association> parseAssociations(Element root, HashMap<String, String> entityIdsAndNames) {
+    public static List<Association> parse(Element root, HashMap<String, String> entityIdsAndNames) {
         List<Association> associations = new ArrayList<>();
 
         Node model = root.getChildNodes().item(3);
@@ -47,7 +47,7 @@ public class AssociationParser {
                         String entityTypeId = ownedAttributeElement.getAttribute(Constants.TYPE_ATTR);
                         String memberId = ownedAttributeElement.getAttribute(Constants.XMI_ID);
 
-                        Element upperValueElement = (Element) element.getElementsByTagName(Constants.UPPER_VALUE_TAG).item(0);
+                        Element upperValueElement = (Element) ownedAttributeElement.getElementsByTagName(Constants.UPPER_VALUE_TAG).item(0);
                         String upperValue = upperValueElement.getAttribute(Constants.VALUE_ATTR);
 
                         String entityName = entityIdsAndNames.get(entityTypeId);

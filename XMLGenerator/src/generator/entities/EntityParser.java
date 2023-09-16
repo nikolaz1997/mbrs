@@ -8,7 +8,7 @@ import org.w3c.dom.NodeList;
 import java.util.HashMap;
 
 public class EntityParser {
-    public static HashMap<String, String> parseEntities(Element root) {
+    public static HashMap<String, String> parseInHashMap(Element root) {
         Node model = root.getChildNodes().item(3);
         HashMap<String, String> entityIdsAndNames = new HashMap<>();
 
