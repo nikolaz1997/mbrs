@@ -1,10 +1,9 @@
 package generator;
 
+import generator.associations.Association;
 import generator.associations.AssociationParser;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import generator.entities.EntityParser;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -23,14 +22,25 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Reader {
-    private static Map<String, String> entityIdsAndNames = new HashMap<>();
+    private static HashMap<String, String> entityIdsAndNames = new HashMap<>();
+    private static List<Association> associations = new ArrayList<>();
     private static Map<String, String> fieldsAndTypes = new HashMap<>();
     private static Map<String, String> enumsTypes = new HashMap<>();
 
     public static void main(String[] args) {
         try {
             Element root = getElement();
-            var associations = AssociationParser.parseAssociations(root);
+
+            // Loop over all packaged elements and add id and Name
+            // When needing a type for an Enum or Association easily access the map to get the correct type
+            entityIdsAndNames = EntityParser.parseEntities(root);
+            for (Map.Entry<String, String> entry : entityIdsAndNames.entrySet()) {
+                System.out.println(entry.getKey());
+                System.out.println(entry.getValue());
+            }
+
+            // Loop over all packaged elements and extract associations, so later we can determine the relations
+            associations = AssociationParser.parseAssociations(root, entityIdsAndNames);
             for (var ass : associations) {
                 System.out.println(ass);
             }
@@ -49,16 +59,6 @@ public class Reader {
         if (model.getNodeType() == Node.ELEMENT_NODE) {
             Element modelElement = (Element) model;
             NodeList nodeList = modelElement.getElementsByTagName(Constants.PACKAGED_ELEMENT_TAG);
-
-            // Loop over all packaged elements and add id and Name
-            // When needing a type for an Enum or Association easily access the map to get the correct type
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node node = nodeList.item(i);
-                Element element = (Element) node;
-                String name = element.getAttribute(Constants.NAME_ATTR);
-                String id = element.getAttribute(Constants.XMI_ID);
-                entityIdsAndNames.put(id, name);  //use class names for later when creating services and repos
-            }
 
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);

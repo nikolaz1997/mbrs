@@ -6,19 +6,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class AssociationParser {
-    public static List<Association> parseAssociations(Element root) {
+    public static List<Association> parseAssociations(Element root, HashMap<String, String> entityIdsAndNames) {
         List<Association> associations = new ArrayList<>();
 
         Node model = root.getChildNodes().item(3);
         if (model.getNodeType() == Node.ELEMENT_NODE) {
             Element modelElement = (Element) model;
             NodeList packagedElements = modelElement.getElementsByTagName(Constants.PACKAGED_ELEMENT_TAG);
-
-            // Parse all entities in XML File with its ids
-            var entityIdsAndNames = parseEntitiesWithIds(packagedElements);
 
             // Loop over all packaged elements and extract Associations
             extractAssociationsWithoutFullMembers(associations, packagedElements);
@@ -50,9 +46,6 @@ public class AssociationParser {
                         String associationId = ownedAttributeElement.getAttribute(Constants.ASSOCIATION_ATTR);
                         String entityTypeId = ownedAttributeElement.getAttribute(Constants.TYPE_ATTR);
                         String memberId = ownedAttributeElement.getAttribute(Constants.XMI_ID);
-
-//                        System.out.println(associationId);
-//                        System.out.println(entityTypeId);
 
                         Element upperValueElement = (Element) element.getElementsByTagName(Constants.UPPER_VALUE_TAG).item(0);
                         String upperValue = upperValueElement.getAttribute(Constants.VALUE_ATTR);
@@ -111,17 +104,5 @@ public class AssociationParser {
                 associations.add(newAssociation);
             }
         }
-    }
-
-    private static HashMap<String, String> parseEntitiesWithIds(NodeList packagedElements) {
-        HashMap<String, String> entityIdsAndNames = new HashMap<>();
-        for (int i = 0; i < packagedElements.getLength(); i++) {
-            Node node = packagedElements.item(i);
-            Element element = (Element) node;
-            String name = element.getAttribute(Constants.NAME_ATTR);
-            String id = element.getAttribute(Constants.XMI_ID);
-            entityIdsAndNames.put(id, name);  //use class names for later when creating services and repos
-        }
-        return entityIdsAndNames;
     }
 }
