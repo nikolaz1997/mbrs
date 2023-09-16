@@ -2,6 +2,7 @@ package generator;
 
 import generator.associations.Association;
 import generator.associations.AssociationParser;
+import generator.associations.AssociationType;
 import generator.entities.EntityParser;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -34,19 +35,19 @@ public class Reader {
             // Loop over all packaged elements and add id and Name
             // When needing a type for an Enum or Association easily access the map to get the correct type
             entityIdsAndNames = EntityParser.parseEntities(root);
-            for (Map.Entry<String, String> entry : entityIdsAndNames.entrySet()) {
-                System.out.println(entry.getKey());
-                System.out.println(entry.getValue());
-            }
+//            for (Map.Entry<String, String> entry : entityIdsAndNames.entrySet()) {
+//                System.out.println(entry.getKey());
+//                System.out.println(entry.getValue());
+//            }
 
             // Loop over all packaged elements and extract associations, so later we can determine the relations
             associations = AssociationParser.parseAssociations(root, entityIdsAndNames);
-            for (var ass : associations) {
-                System.out.println(ass);
-            }
+//            for (var ass : associations) {
+//                System.out.println(ass);
+//            }
 //            generateSpringBootApplicationFile();
 //            generatePomFile();
-//            generateModel(root);
+            generateModel(root);
 //            generateCrud();
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,34 +107,36 @@ public class Reader {
                                 fieldsAndTypes.put(ownedAttributeElement.getAttribute(Constants.NAME_ATTR), ownedAttributeElement.getAttribute(Constants.NAME_ATTR));
                             } else {
                                 // this section is used for creating associations inside classes: based on values add to fieldAndTypes
-                                String entityTypeId = ownedAttributeElement.getAttribute(Constants.TYPE_ATTR);
+                                String associationId = ownedAttributeElement.getAttribute(Constants.ASSOCIATION_ATTR);
+                                String associationMemberId = ownedAttributeElement.getAttribute(Constants.XMI_ID);
 
-                                // lower value of association
-                                Element lowerValueElement = (Element) element.getElementsByTagName(Constants.LOWER_VALUE_TAG).item(0);
-                                String lowerValue = lowerValueElement.getAttribute(Constants.VALUE_ATTR);
-//                                System.out.println(lowerValue);
+                                Association foundAssociation = associations
+                                        .stream()
+                                        .filter(a -> associationId.equals(a.id))
+                                        .findFirst()
+                                        .orElseThrow();
 
-                                Element upperValueElement = (Element) element.getElementsByTagName(Constants.UPPER_VALUE_TAG).item(0);
-                                String upperValue = upperValueElement.getAttribute(Constants.VALUE_ATTR);
-//                                System.out.println(upperValue);
+                                if (foundAssociation.memberOne.id.equals(associationMemberId)) {
+                                    String typeOfAssociationProperty = foundAssociation.memberOne.associationType == AssociationType.One
+                                            ? foundAssociation.memberOne.dataType
+                                            : "List<" + foundAssociation.memberOne.dataType + ">";
 
-                                // Check if entity exists in hash map for easier access
-                                String entity = entityIdsAndNames.get(entityTypeId);
-//                                System.out.println(entity);
+                                    String nameOfAssociationProperty = foundAssociation.memberOne.associationType == AssociationType.One
+                                            ? foundAssociation.memberOne.dataType
+                                            : foundAssociation.memberOne.dataType + "s";
 
-                                // TODO: we can check lower value for nullable fields?
+                                    fieldsAndTypes.put(nameOfAssociationProperty, typeOfAssociationProperty);
+                                } else {
+                                    String typeOfAssociationProperty = foundAssociation.memberTwo.associationType == AssociationType.One
+                                            ? foundAssociation.memberTwo.dataType
+                                            : "List<" + foundAssociation.memberTwo.dataType + ">";
 
-                                String typeOfAssociationProperty = upperValue.equals("*")
-                                        ? "List<" + entity + ">"
-                                        : entity;
+                                    String nameOfAssociationProperty = foundAssociation.memberTwo.associationType == AssociationType.One
+                                            ? foundAssociation.memberTwo.dataType
+                                            : foundAssociation.memberTwo.dataType + "s";
 
-                                // TODO: handle entity ends with y
-                                String nameOfAssociationProperty = upperValue.equals("*")
-                                        ? entity + "s"
-                                        : entity;
-
-                                fieldsAndTypes.put(nameOfAssociationProperty, typeOfAssociationProperty);
-
+                                    fieldsAndTypes.put(nameOfAssociationProperty, typeOfAssociationProperty);
+                                }
                             }
                         }
                     }
