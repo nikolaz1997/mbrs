@@ -22,16 +22,6 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Reader {
-
-    private static final String CLASS = "uml:Class";
-    private static final String ENUMERATION = "uml:Enumeration";
-    private static final String ASSOCIATION = "uml:Association";
-    public static final String PACKAGED_ELEMENT_TAG = "packagedElement";
-    public static final String OWNED_ATTRIBUTE_TAG = "ownedAttribute";
-    public static final String NAME_ATTR = "name";
-    public static final String XMI_TYPE_ATTR = "xmi:type";
-    public static final String XMI_ID = "xmi:id";
-
     private static List<String> entityNames = new ArrayList<>();
     private static Map<String, String> entityIdsAndNames = new HashMap<>();
     private static Map<String, String> fieldsAndTypes = new HashMap<>();
@@ -55,15 +45,15 @@ public class Reader {
         Node model = root.getChildNodes().item(3);
         if (model.getNodeType() == Node.ELEMENT_NODE) {
             Element modelElement = (Element) model;
-            NodeList nodeList = modelElement.getElementsByTagName(PACKAGED_ELEMENT_TAG);
+            NodeList nodeList = modelElement.getElementsByTagName(Constants.PACKAGED_ELEMENT_TAG);
 
-            // Loop over all packaged elements and add Id and Name
+            // Loop over all packaged elements and add id and Name
             // When needing a type for an Enum or Association easily access the map to get the correct type
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
                 Element element = (Element) node;
-                String name = element.getAttribute(NAME_ATTR);
-                String id = element.getAttribute(XMI_ID);
+                String name = element.getAttribute(Constants.NAME_ATTR);
+                String id = element.getAttribute(Constants.XMI_ID);
                 entityIdsAndNames.put(id, name);  //use class names for later when creating services and repos
             }
 
@@ -72,57 +62,58 @@ public class Reader {
                 Element element = (Element) node;
 
                 // Name of packagedElement
-                String name = element.getAttribute(NAME_ATTR);
+                String name = element.getAttribute(Constants.NAME_ATTR);
 //                    System.out.println("Data-Name: " + name);
 
                 // Type of packagedElement
-                String type = element.getAttribute(XMI_TYPE_ATTR);
+                String type = element.getAttribute(Constants.XMI_TYPE_ATTR);
 //                    System.out.println("Data-Type: " + type + "\n");
 
                 // This if excludes creation of enums and associations as they can be standalone packagedElements
                 // enums are created in else part
-                if ((!ENUMERATION.equals(element.getAttribute(XMI_TYPE_ATTR)) && (!ASSOCIATION.equals(element.getAttribute(XMI_TYPE_ATTR))))) {
+                if ((!Constants.ENUMERATION.equals(element.getAttribute(Constants.XMI_TYPE_ATTR))
+                        && (!Constants.ASSOCIATION.equals(element.getAttribute(Constants.XMI_TYPE_ATTR))))) {
                     entityNames.add(name);  //use class names for later when creating services and repos
 
                     // Getting fields for Classes
-                    NodeList ownedAttributeNodeList = element.getElementsByTagName(OWNED_ATTRIBUTE_TAG);
+                    NodeList ownedAttributeNodeList = element.getElementsByTagName(Constants.OWNED_ATTRIBUTE_TAG);
                     for (int j = 0; j < ownedAttributeNodeList.getLength(); j++) {
                         Node ownedAttributeNode = ownedAttributeNodeList.item(j);
                         Element ownedAttributeElement = (Element) ownedAttributeNode;
 
                         // This if excludes generating Associations inside class (Associations have type attribute)
                         // should be updated when we want to add them for fields
-                        if (ownedAttributeElement.getAttributes().getNamedItem("type") == null) {
-                            Node typeNode = ownedAttributeElement.getElementsByTagName("type").item(0);  //takes type element inside ownedAttribute
+                        if (ownedAttributeElement.getAttributes().getNamedItem(Constants.TYPE_ATTR) == null) {
+                            Node typeNode = ownedAttributeElement.getElementsByTagName(Constants.TYPE_ATTR).item(0);  //takes type element inside ownedAttribute
                             Element typeElement = (Element) typeNode;
 
-                            Node xmiExtensionNode = typeElement.getElementsByTagName("xmi:Extension").item(0);  //takes xmi:Extension inside type element
+                            Node xmiExtensionNode = typeElement.getElementsByTagName(Constants.XMI_EXTENSION).item(0);  //takes xmi:Extension inside type element
                             Element xmiExtensionElement = (Element) xmiExtensionNode;
 
-                            Node referenceExtensionNode = xmiExtensionElement.getElementsByTagName("referenceExtension").item(0); //takes referenceExtension inside xmiExtension
+                            Node referenceExtensionNode = xmiExtensionElement.getElementsByTagName(Constants.REFERENCE_EXTENSION_TAG).item(0); //takes referenceExtension inside xmiExtension
                             Element referenceExtensionElement = (Element) referenceExtensionNode;
 
-                            final var fieldTypes = Arrays.stream(referenceExtensionElement.getAttribute("referentPath").split("::"))
+                            final var fieldTypes = Arrays.stream(referenceExtensionElement.getAttribute(Constants.REFERENT_PATH_ATTR).split("::"))
                                     .map(String.class::cast)
                                     .toList();
 
 //                                System.out.println(fieldTypes.get(3));
-                            fieldsAndTypes.put(ownedAttributeElement.getAttribute("name"), fieldTypes.get(3));
+                            fieldsAndTypes.put(ownedAttributeElement.getAttribute(Constants.NAME_ATTR), fieldTypes.get(3));
                         } else {
                             // this section creates enum field inside class
                             if (!ownedAttributeElement.hasChildNodes()) {   // Enums don't have nodes; Associations have nodes
-                                fieldsAndTypes.put(ownedAttributeElement.getAttribute("name"), ownedAttributeElement.getAttribute("name"));
+                                fieldsAndTypes.put(ownedAttributeElement.getAttribute(Constants.NAME_ATTR), ownedAttributeElement.getAttribute(Constants.NAME_ATTR));
                             } else {
                                 // this section is used for creating associations inside classes: based on values add to fieldAndTypes
-                                String entityTypeId = ownedAttributeElement.getAttribute("type");
+                                String entityTypeId = ownedAttributeElement.getAttribute(Constants.TYPE_ATTR);
 
                                 // lower value of association
-                                Element lowerValueElement = (Element) element.getElementsByTagName("lowerValue").item(0);
-                                String lowerValue = lowerValueElement.getAttribute("value");
+                                Element lowerValueElement = (Element) element.getElementsByTagName(Constants.LOWER_VALUE_TAG).item(0);
+                                String lowerValue = lowerValueElement.getAttribute(Constants.VALUE_ATTR);
 //                                System.out.println(lowerValue);
 
-                                Element upperValueElement = (Element) element.getElementsByTagName("upperValue").item(0);
-                                String upperValue = upperValueElement.getAttribute("value");
+                                Element upperValueElement = (Element) element.getElementsByTagName(Constants.UPPER_VALUE_TAG).item(0);
+                                String upperValue = upperValueElement.getAttribute(Constants.VALUE_ATTR);
 //                                System.out.println(upperValue);
 
                                 // Check if entity exists in hash map for easier access
@@ -152,7 +143,7 @@ public class Reader {
                     fieldsAndTypes.clear();
                     //                    createEntityClass(name, fieldsAndTypes);
                 } else {
-                    if (ENUMERATION.equals(type)) {
+                    if (Constants.ENUMERATION.equals(type)) {
                         final var enumFields = getEnumFields(element);
 //                        createEnum(name, enumFields);
                     } else {
