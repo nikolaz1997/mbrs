@@ -30,8 +30,10 @@ public class Reader {
     public static final String OWNED_ATTRIBUTE_TAG = "ownedAttribute";
     public static final String NAME_ATTR = "name";
     public static final String XMI_TYPE_ATTR = "xmi:type";
+    public static final String XMI_ID = "xmi:id";
 
     private static List<String> entityNames = new ArrayList<>();
+    private static Map<String, String> entityIdsAndNames = new HashMap<>();
     private static Map<String, String> fieldsAndTypes = new HashMap<>();
     private static Map<String, String> enumsTypes = new HashMap<>();
 
@@ -39,10 +41,10 @@ public class Reader {
         try {
             Element root = getElement();
 
-            generateSpringBootApplicationFile();
-            generatePomFile();
+//            generateSpringBootApplicationFile();
+//            generatePomFile();
             generateModel(root);
-            generateCrud();
+//            generateCrud();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -54,6 +56,17 @@ public class Reader {
         if (model.getNodeType() == Node.ELEMENT_NODE) {
             Element modelElement = (Element) model;
             NodeList nodeList = modelElement.getElementsByTagName(PACKAGED_ELEMENT_TAG);
+
+            // Loop over all packaged elements and add Id and Name
+            // When needing a type for an Enum or Association easily access the map to get the correct type
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                Element element = (Element) node;
+                String name = element.getAttribute(NAME_ATTR);
+                String id = element.getAttribute(XMI_ID);
+                entityIdsAndNames.put(id, name);  //use class names for later when creating services and repos
+            }
+
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
                 Element element = (Element) node;
@@ -97,20 +110,51 @@ public class Reader {
                             fieldsAndTypes.put(ownedAttributeElement.getAttribute("name"), fieldTypes.get(3));
                         } else {
                             // this section creates enum field inside class
-                            // this might be used for creating associations inside classes !?
                             if (!ownedAttributeElement.hasChildNodes()) {   // Enums don't have nodes; Associations have nodes
                                 fieldsAndTypes.put(ownedAttributeElement.getAttribute("name"), ownedAttributeElement.getAttribute("name"));
                             } else {
-                                Element lowerValue = (Element) element.getElementsByTagName("lowerValue").item(0);
-                                System.out.println(lowerValue.getAttribute("value"));
+                                // this section is used for creating associations inside classes: based on values add to fieldAndTypes
+                                String entityTypeId = ownedAttributeElement.getAttribute("type");
+
+                                // lower value of association
+                                Element lowerValueElement = (Element) element.getElementsByTagName("lowerValue").item(0);
+                                String lowerValue = lowerValueElement.getAttribute("value");
+//                                System.out.println(lowerValue);
+
+                                Element upperValueElement = (Element) element.getElementsByTagName("upperValue").item(0);
+                                String upperValue = upperValueElement.getAttribute("value");
+//                                System.out.println(upperValue);
+
+                                // Check if entity exists in hash map for easier access
+                                String entity = entityIdsAndNames.get(entityTypeId);
+//                                System.out.println(entity);
+
+                                // TODO: we can check lower value for nullable fields?
+
+                                String typeOfAssociationProperty = upperValue.equals("*")
+                                        ? "List<" + entity + ">"
+                                        : entity;
+
+                                // TODO: handle entity ends with y
+                                String nameOfAssociationProperty = upperValue.equals("*")
+                                        ? entity + "s"
+                                        : entity;
+
+                                fieldsAndTypes.put(nameOfAssociationProperty, typeOfAssociationProperty);
+
                             }
                         }
                     }
-                    createEntityClass(name, fieldsAndTypes);
+                    System.out.println("-------------");
+                    System.out.println(name);
+                    System.out.println(fieldsAndTypes);
+                    System.out.println("-------------");
+                    fieldsAndTypes.clear();
+                    //                    createEntityClass(name, fieldsAndTypes);
                 } else {
                     if (ENUMERATION.equals(type)) {
                         final var enumFields = getEnumFields(element);
-                        createEnum(name, enumFields);
+//                        createEnum(name, enumFields);
                     } else {
                         // Prints names of Associations
                         System.out.println(element.getAttribute("name"));
@@ -157,17 +201,17 @@ public class Reader {
         String className = String.format("public class %s {%n", name);
 
         List<String> classFields = fieldsAndTypes.keySet().stream()
-                        .map(key -> {
-                            final var fieldRow = "\tprivate " + fieldsAndTypes.get(key) + " " + key.toLowerCase();
-                            if ("Id".equals(key)) {
-                                generateRepository(name, fieldsAndTypes.get(key));
-                                return "\t@Id\n" + fieldRow;
-                            } else {
-                                return "\t@Column(name=\"" + key.toLowerCase() + "\")\n" + fieldRow;
-                            }
-                        })
-                        .map(String.class::cast)
-                        .toList();
+                .map(key -> {
+                    final var fieldRow = "\tprivate " + fieldsAndTypes.get(key) + " " + key.toLowerCase();
+                    if ("Id".equals(key)) {
+                        generateRepository(name, fieldsAndTypes.get(key));
+                        return "\t@Id\n" + fieldRow;
+                    } else {
+                        return "\t@Column(name=\"" + key.toLowerCase() + "\")\n" + fieldRow;
+                    }
+                })
+                .map(String.class::cast)
+                .toList();
 
         String classCode = classAnnotations + className + String.join(";\n", classFields) + ";\n}";
 
