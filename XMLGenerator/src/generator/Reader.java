@@ -1,5 +1,6 @@
 package generator;
 
+import generator.associations.AssociationGenerator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -29,10 +30,13 @@ public class Reader {
     public static void main(String[] args) {
         try {
             Element root = getElement();
-
+            var associations = AssociationGenerator.parseAssociations(root);
+            for (var ass : associations) {
+                System.out.println(ass);
+            }
 //            generateSpringBootApplicationFile();
 //            generatePomFile();
-            generateModel(root);
+//            generateModel(root);
 //            generateCrud();
         } catch (Exception e) {
             e.printStackTrace();
@@ -178,13 +182,13 @@ public class Reader {
 
     private static void createEntityClass(final String name, final Map<String, String> fieldsAndTypes) {
         String classAnnotations = "@Entity\n" +
-                                  "@Getter\n" +
-                                  "@Setter\n" +
-                                  "@ToString\n" +
-                                  "@AllArgsConstructor\n" +
-                                  "@NoArgsConstructor\n" +
-                                  "@Builder(toBuilder = true)\n" +
-                                  "@Table(name=\"" + name.toLowerCase() + "\")\n";
+                "@Getter\n" +
+                "@Setter\n" +
+                "@ToString\n" +
+                "@AllArgsConstructor\n" +
+                "@NoArgsConstructor\n" +
+                "@Builder(toBuilder = true)\n" +
+                "@Table(name=\"" + name.toLowerCase() + "\")\n";
 
         String className = String.format("public class %s {%n", name);
 
@@ -289,8 +293,8 @@ public class Reader {
     private static void generateController(final String entityName) {
         String classAnnotations =
                 "@RestController\n" +
-                "@RequiredArgsConstructor\n" +
-                "@RequestMapping(value = \"/api/" + entityName.toLowerCase().concat("s") + "\")\n";
+                        "@RequiredArgsConstructor\n" +
+                        "@RequestMapping(value = \"/api/" + entityName.toLowerCase().concat("s") + "\")\n";
 
         String className = String.format("public class %s" + "Controller {%n", entityName);
 
@@ -300,17 +304,17 @@ public class Reader {
 
         String basicLogicCode =
                 "\n\t@GetMapping()\n" +
-                "\t@ResponseStatus(HttpStatus.OK)\n" +
-                "\tpublic List<" + entityName + "Entity> get" + entityName + "s() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
-                "\n\t@PostMapping()\n" +
-                "\t@ResponseStatus(HttpStatus.CREATED)\n" +
-                "\tpublic " + entityName + "Entity create" + entityName + "() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
-                "\n\t@PutMapping()\n" +
-                "\t@ResponseStatus(HttpStatus.NO_CONTENT)\n" +
-                "\tpublic " + entityName + "Entity update" + entityName + "() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
-                "\n\t@DeleteMapping()\n" +
-                "\t@ResponseStatus(HttpStatus.NO_CONTENT)\n" +
-                "\tpublic void delete" + entityName + "() {}";
+                        "\t@ResponseStatus(HttpStatus.OK)\n" +
+                        "\tpublic List<" + entityName + "Entity> get" + entityName + "s() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
+                        "\n\t@PostMapping()\n" +
+                        "\t@ResponseStatus(HttpStatus.CREATED)\n" +
+                        "\tpublic " + entityName + "Entity create" + entityName + "() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
+                        "\n\t@PutMapping()\n" +
+                        "\t@ResponseStatus(HttpStatus.NO_CONTENT)\n" +
+                        "\tpublic " + entityName + "Entity update" + entityName + "() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
+                        "\n\t@DeleteMapping()\n" +
+                        "\t@ResponseStatus(HttpStatus.NO_CONTENT)\n" +
+                        "\tpublic void delete" + entityName + "() {}";
 
         String comment = "\t// TODO: Adjust method annotations and add more controller functions that are required by your logic.";
 
