@@ -4,6 +4,7 @@ import generator.associations.Association;
 import generator.associations.AssociationParser;
 import generator.associations.AssociationType;
 import generator.entities.EntityParser;
+import generator.entities.EntityProperty;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -25,7 +26,7 @@ import java.util.Scanner;
 public class Reader {
     private static HashMap<String, String> entityIdsAndNames = new HashMap<>();
     private static List<Association> associations = new ArrayList<>();
-    private static Map<String, String> fieldsAndTypes = new HashMap<>();
+    private static List<EntityProperty> currentEntityProperties = new ArrayList<>();
     private static Map<String, String> enumsTypes = new HashMap<>();
 
     public static void main(String[] args) {
@@ -100,11 +101,12 @@ public class Reader {
                                     .toList();
 
 //                                System.out.println(fieldTypes.get(3));
-                            fieldsAndTypes.put(ownedAttributeElement.getAttribute(Constants.NAME_ATTR), fieldTypes.get(3));
+                            currentEntityProperties.add(new EntityProperty(ownedAttributeElement.getAttribute(Constants.NAME_ATTR), fieldTypes.get(3), null));
                         } else {
                             // this section creates enum field inside class
                             if (!ownedAttributeElement.hasChildNodes()) {   // Enums don't have nodes; Associations have nodes
-                                fieldsAndTypes.put(ownedAttributeElement.getAttribute(Constants.NAME_ATTR), ownedAttributeElement.getAttribute(Constants.NAME_ATTR));
+                                // TODO: Find name of entity in hashmap
+                                currentEntityProperties.add(new EntityProperty(ownedAttributeElement.getAttribute(Constants.NAME_ATTR), ownedAttributeElement.getAttribute(Constants.NAME_ATTR), null));
                             } else {
                                 // this section is used for creating associations inside classes: based on values add to fieldAndTypes
                                 String associationId = ownedAttributeElement.getAttribute(Constants.ASSOCIATION_ATTR);
@@ -125,7 +127,7 @@ public class Reader {
                                             ? foundAssociation.memberOne.dataType
                                             : foundAssociation.memberOne.dataType + "s";
 
-                                    fieldsAndTypes.put(nameOfAssociationProperty, typeOfAssociationProperty);
+                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, "TEST"));
                                 } else {
                                     String typeOfAssociationProperty = foundAssociation.memberTwo.associationType == AssociationType.One
                                             ? foundAssociation.memberTwo.dataType
@@ -135,24 +137,27 @@ public class Reader {
                                             ? foundAssociation.memberTwo.dataType
                                             : foundAssociation.memberTwo.dataType + "s";
 
-                                    fieldsAndTypes.put(nameOfAssociationProperty, typeOfAssociationProperty);
+
+                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, "TEST"));
                                 }
                             }
                         }
                     }
                     System.out.println("-------------");
                     System.out.println(name);
-                    System.out.println(fieldsAndTypes);
+                    for (EntityProperty property: currentEntityProperties) {
+                        System.out.println(property);
+                    }
                     System.out.println("-------------");
-                    fieldsAndTypes.clear();
-                    //                    createEntityClass(name, fieldsAndTypes);
+                    currentEntityProperties.clear();
+//                    createEntityClass(name, fieldsAndTypes);
                 } else {
                     if (Constants.ENUMERATION.equals(type)) {
                         final var enumFields = getEnumFields(element);
 //                        createEnum(name, enumFields);
                     } else {
                         // Prints names of Associations
-                        System.out.println(element.getAttribute("name"));
+//                        System.out.println(element.getAttribute("name"));
                     }
                 }
             }
@@ -185,13 +190,13 @@ public class Reader {
 
     private static void createEntityClass(final String name, final Map<String, String> fieldsAndTypes) {
         String classAnnotations = "@Entity\n" +
-                "@Getter\n" +
-                "@Setter\n" +
-                "@ToString\n" +
-                "@AllArgsConstructor\n" +
-                "@NoArgsConstructor\n" +
-                "@Builder(toBuilder = true)\n" +
-                "@Table(name=\"" + name.toLowerCase() + "\")\n";
+                                  "@Getter\n" +
+                                  "@Setter\n" +
+                                  "@ToString\n" +
+                                  "@AllArgsConstructor\n" +
+                                  "@NoArgsConstructor\n" +
+                                  "@Builder(toBuilder = true)\n" +
+                                  "@Table(name=\"" + name.toLowerCase() + "\")\n";
 
         String className = String.format("public class %s {%n", name);
 
@@ -296,8 +301,8 @@ public class Reader {
     private static void generateController(final String entityName) {
         String classAnnotations =
                 "@RestController\n" +
-                        "@RequiredArgsConstructor\n" +
-                        "@RequestMapping(value = \"/api/" + entityName.toLowerCase().concat("s") + "\")\n";
+                "@RequiredArgsConstructor\n" +
+                "@RequestMapping(value = \"/api/" + entityName.toLowerCase().concat("s") + "\")\n";
 
         String className = String.format("public class %s" + "Controller {%n", entityName);
 
@@ -307,17 +312,17 @@ public class Reader {
 
         String basicLogicCode =
                 "\n\t@GetMapping()\n" +
-                        "\t@ResponseStatus(HttpStatus.OK)\n" +
-                        "\tpublic List<" + entityName + "Entity> get" + entityName + "s() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
-                        "\n\t@PostMapping()\n" +
-                        "\t@ResponseStatus(HttpStatus.CREATED)\n" +
-                        "\tpublic " + entityName + "Entity create" + entityName + "() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
-                        "\n\t@PutMapping()\n" +
-                        "\t@ResponseStatus(HttpStatus.NO_CONTENT)\n" +
-                        "\tpublic " + entityName + "Entity update" + entityName + "() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
-                        "\n\t@DeleteMapping()\n" +
-                        "\t@ResponseStatus(HttpStatus.NO_CONTENT)\n" +
-                        "\tpublic void delete" + entityName + "() {}";
+                "\t@ResponseStatus(HttpStatus.OK)\n" +
+                "\tpublic List<" + entityName + "Entity> get" + entityName + "s() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
+                "\n\t@PostMapping()\n" +
+                "\t@ResponseStatus(HttpStatus.CREATED)\n" +
+                "\tpublic " + entityName + "Entity create" + entityName + "() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
+                "\n\t@PutMapping()\n" +
+                "\t@ResponseStatus(HttpStatus.NO_CONTENT)\n" +
+                "\tpublic " + entityName + "Entity update" + entityName + "() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
+                "\n\t@DeleteMapping()\n" +
+                "\t@ResponseStatus(HttpStatus.NO_CONTENT)\n" +
+                "\tpublic void delete" + entityName + "() {}";
 
         String comment = "\t// TODO: Adjust method annotations and add more controller functions that are required by your logic.";
 
