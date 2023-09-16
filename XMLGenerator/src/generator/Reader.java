@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Reader {
-    private static List<String> entityNames = new ArrayList<>();
     private static Map<String, String> entityIdsAndNames = new HashMap<>();
     private static Map<String, String> fieldsAndTypes = new HashMap<>();
     private static Map<String, String> enumsTypes = new HashMap<>();
@@ -71,9 +70,7 @@ public class Reader {
 
                 // This if excludes creation of enums and associations as they can be standalone packagedElements
                 // enums are created in else part
-                if ((!Constants.ENUMERATION.equals(element.getAttribute(Constants.XMI_TYPE_ATTR))
-                        && (!Constants.ASSOCIATION.equals(element.getAttribute(Constants.XMI_TYPE_ATTR))))) {
-                    entityNames.add(name);  //use class names for later when creating services and repos
+                if ((!Constants.ENUMERATION.equals(type) && (!Constants.ASSOCIATION.equals(type)))) {
 
                     // Getting fields for Classes
                     NodeList ownedAttributeNodeList = element.getElementsByTagName(Constants.OWNED_ATTRIBUTE_TAG);
