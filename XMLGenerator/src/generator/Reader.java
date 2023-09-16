@@ -1,6 +1,6 @@
 package generator;
 
-import generator.associations.AssociationGenerator;
+import generator.associations.AssociationParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -30,7 +30,7 @@ public class Reader {
     public static void main(String[] args) {
         try {
             Element root = getElement();
-            var associations = AssociationGenerator.parseAssociations(root);
+            var associations = AssociationParser.parseAssociations(root);
             for (var ass : associations) {
                 System.out.println(ass);
             }

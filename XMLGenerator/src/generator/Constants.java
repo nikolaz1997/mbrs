@@ -16,6 +16,7 @@ public class Constants {
     public static final String TYPE_ATTR = "type";
     public static final String REFERENT_PATH_ATTR = "referentPath";
     public static final String VALUE_ATTR = "value";
+    public static final String ASSOCIATION_ATTR = "association";
 
     public static final String XMI_TYPE_ATTR = "xmi:type";
     public static final String XMI_ID = "xmi:id";
