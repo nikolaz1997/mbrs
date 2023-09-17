@@ -101,12 +101,26 @@ public class Reader {
                                     .toList();
 
 //                                System.out.println(fieldTypes.get(3));
-                            currentEntityProperties.add(new EntityProperty(ownedAttributeElement.getAttribute(Constants.NAME_ATTR), fieldTypes.get(3), null));
+                            currentEntityProperties.add(
+                                    new EntityProperty(
+                                            fieldTypes.get(3),
+                                            ownedAttributeElement.getAttribute(Constants.NAME_ATTR),
+                                            null,
+                                            null
+                                    )
+                            );
                         } else {
                             // this section creates enum field inside class
                             if (!ownedAttributeElement.hasChildNodes()) {   // Enums don't have nodes; Associations have nodes
                                 // TODO: Find name of entity in hashmap
-                                currentEntityProperties.add(new EntityProperty(ownedAttributeElement.getAttribute(Constants.NAME_ATTR), ownedAttributeElement.getAttribute(Constants.NAME_ATTR), null));
+                                currentEntityProperties.add(
+                                        new EntityProperty(
+                                                ownedAttributeElement.getAttribute(Constants.NAME_ATTR),
+                                                ownedAttributeElement.getAttribute(Constants.NAME_ATTR),
+                                                null,
+                                                null
+                                        )
+                                );
                             } else {
                                 // this section is used for creating associations inside classes: based on values add to fieldAndTypes
                                 String associationId = ownedAttributeElement.getAttribute(Constants.ASSOCIATION_ATTR);
@@ -129,7 +143,28 @@ public class Reader {
 
                                     String association = calculateAssociation(foundAssociation.memberOne.associationType, foundAssociation.memberTwo.associationType);
 
-                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, association));
+                                    String decorator = "";
+
+                                    if (association.equals("OneToOne")) {
+                                        decorator = "\t@OneToOne" + "\n" + "\t@JoinColumn(name=\"" + nameOfAssociationProperty.toLowerCase() + "_id" + "\")";
+                                    }
+
+                                    if (association.equals("ManyToOne")) {
+                                        decorator = "\t@ManyToOne" + "\n" + "\t@JoinColumn(name=\"" + nameOfAssociationProperty.toLowerCase() + "_id" + "\")";
+                                    }
+
+                                    if (association.equals("OneToMany")) {
+                                        decorator = "\t@OneToMany(mappedBy=\"" + name.toLowerCase() + "\")";
+                                    }
+
+                                    if (association.equals("ManyToMany")) {
+                                        decorator = "\t@ManyToMany(CascadeType.ALL)" + "\n" +
+                                                "\t@JoinTable(name=\"" + foundAssociation.memberOne.dataType.toLowerCase() + "_" + name.toLowerCase() + "\", " + "\n\t" +
+                                                "\t\tjoinColumns = @JoinColumn(name=\"" + foundAssociation.memberOne.dataType.toLowerCase() + "_id\", referencedColumnName=\"id\"), " + "\n\t" +
+                                                "\t\tinverseJoinColumns = @JoinColumn(name=\"" + name.toLowerCase() + "_id\", referencedColumnName=\"id\"))";
+                                    }
+
+                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, association, decorator));
                                 } else {
                                     String typeOfAssociationProperty = foundAssociation.memberTwo.associationType == AssociationType.One
                                             ? foundAssociation.memberTwo.dataType
@@ -141,7 +176,7 @@ public class Reader {
 
                                     String association = calculateAssociation(foundAssociation.memberTwo.associationType, foundAssociation.memberOne.associationType);
 
-                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, association));
+                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, association, "TODO"));
                                 }
                             }
                         }
@@ -152,8 +187,8 @@ public class Reader {
                         System.out.println(property);
                     }
                     System.out.println("-------------");
+                    createEntityClass(name, currentEntityProperties);
                     currentEntityProperties.clear();
-//                    createEntityClass(name, fieldsAndTypes);
                 } else {
                     if (Constants.ENUMERATION.equals(type)) {
                         final var enumFields = getEnumFields(element);
@@ -207,7 +242,7 @@ public class Reader {
         return enumFields;
     }
 
-    private static void createEntityClass(final String name, final Map<String, String> fieldsAndTypes) {
+    private static void createEntityClass(final String name, final List<EntityProperty> properties) {
         String classAnnotations = "@Entity\n" +
                                   "@Getter\n" +
                                   "@Setter\n" +
@@ -219,20 +254,22 @@ public class Reader {
 
         String className = String.format("public class %s {%n", name);
 
-        List<String> classFields = fieldsAndTypes.keySet().stream()
-                .map(key -> {
-                    final var fieldRow = "\tprivate " + fieldsAndTypes.get(key) + " " + key.toLowerCase();
-                    if ("Id".equals(key)) {
-                        generateRepository(name, fieldsAndTypes.get(key));
+        List<String> classFields = properties.stream()
+                .map(property -> {
+                    final var fieldRow = "\tprivate " + property.type + " " + property.name.toLowerCase();
+                    if ("Id".equals(property.name) && property.association == null) {
+//                        generateRepository(name, property.name);
                         return "\t@Id\n" + fieldRow;
+                    } else if (property.association == null) {
+                        return "\t@Column(name=\"" + property.name.toLowerCase() + "\")\n" + fieldRow;
                     } else {
-                        return "\t@Column(name=\"" + key.toLowerCase() + "\")\n" + fieldRow;
+                        return property.decorator + "\n" + fieldRow;
                     }
                 })
                 .map(String.class::cast)
                 .toList();
 
-        String classCode = classAnnotations + className + String.join(";\n", classFields) + ";\n}";
+        String classCode = classAnnotations + className + String.join(";\n\n", classFields) + ";\n}";
 
         saveToFile(classCode, name.concat("Entity"));
     }
