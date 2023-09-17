@@ -25,16 +25,4 @@ public class Association {
                 ", memberTwo=" + memberTwo +
                 '}';
     }
-
-    public String getId() {
-        return id;
-    }
-
-    public Member getMemberOne() {
-        return memberOne;
-    }
-
-    public Member getMemberTwo() {
-        return memberTwo;
-    }
 }

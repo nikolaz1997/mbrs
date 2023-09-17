@@ -41,7 +41,7 @@ public class AssociationParser {
                     Node ownedAttributeNode = ownedAttributeNodeList.item(j);
                     Element ownedAttributeElement = (Element) ownedAttributeNode;
 
-                    // If it has type attribute and child  it is association property
+                    // If it has type attribute and child nodes it is association property
                     if (ownedAttributeElement.getAttributes().getNamedItem(Constants.TYPE_ATTR) != null && ownedAttributeElement.hasChildNodes()) {
                         String associationId = ownedAttributeElement.getAttribute(Constants.ASSOCIATION_ATTR);
                         String entityTypeId = ownedAttributeElement.getAttribute(Constants.TYPE_ATTR);
@@ -58,6 +58,7 @@ public class AssociationParser {
                                 .findFirst()
                                 .orElseThrow();
 
+                        // Set type of association based on the upper value of the association
                         if (Objects.equals(associationToEnrich.memberOne.id, memberId)) {
                             associationToEnrich.memberOne.dataType = entityName;
                             associationToEnrich.memberOne.associationType = upperValue.equals("*")
