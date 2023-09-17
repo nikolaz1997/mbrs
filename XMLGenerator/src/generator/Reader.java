@@ -176,7 +176,25 @@ public class Reader {
 
                                     String association = calculateAssociation(foundAssociation.memberTwo.associationType, foundAssociation.memberOne.associationType);
 
-                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, association, "TODO"));
+                                    String decorator = "";
+
+                                    if (association.equals("OneToOne")) {
+                                        decorator = "\t@OneToOne(mappedBy=\"" + name.toLowerCase() + "\")";
+                                    }
+
+                                    if (association.equals("ManyToOne")) {
+                                        decorator = "\t@ManyToOne" + "\n" + "\t@JoinColumn(name=\"" + nameOfAssociationProperty.toLowerCase() + "_id" + "\")";
+                                    }
+
+                                    if (association.equals("OneToMany")) {
+                                        decorator = "\t@OneToMany(mappedBy=\"" + name.toLowerCase() + "\")";
+                                    }
+
+                                    if (association.equals("ManyToMany")) {
+                                        decorator = "\t@ManyToMany(mappedBy=\"" + name.toLowerCase() + "s" + "\")";
+                                    }
+
+                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, association, decorator));
                                 }
                             }
                         }
