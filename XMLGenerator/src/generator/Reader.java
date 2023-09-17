@@ -112,10 +112,11 @@ public class Reader {
                         } else {
                             // this section creates enum field inside class
                             if (!ownedAttributeElement.hasChildNodes()) {   // Enums don't have nodes; Associations have nodes
-                                // TODO: Find name of entity in hashmap
+                                String enumerationTypeId = ownedAttributeElement.getAttribute(Constants.TYPE_ATTR);
+                                String enumerationType = entityIdsAndNames.get(enumerationTypeId);
                                 currentEntityProperties.add(
                                         new EntityProperty(
-                                                ownedAttributeElement.getAttribute(Constants.NAME_ATTR),
+                                                enumerationType,
                                                 ownedAttributeElement.getAttribute(Constants.NAME_ATTR),
                                                 null,
                                                 null
