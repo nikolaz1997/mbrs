@@ -1,9 +1,11 @@
 package generator;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import generator.associations.Association;
+import generator.associations.AssociationParser;
+import generator.associations.AssociationType;
+import generator.entities.EntityParser;
+import generator.entities.EntityProperty;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -22,23 +24,28 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Reader {
-
-    private static final String CLASS = "uml:Class";
-    private static final String ENUMERATION = "uml:Enumeration";
-    private static final String ASSOCIATION = "uml:Association";
-    public static final String PACKAGED_ELEMENT_TAG = "packagedElement";
-    public static final String OWNED_ATTRIBUTE_TAG = "ownedAttribute";
-    public static final String NAME_ATTR = "name";
-    public static final String XMI_TYPE_ATTR = "xmi:type";
-
-    private static List<String> entityNames = new ArrayList<>();
-    private static Map<String, String> fieldsAndTypes = new HashMap<>();
+    private static HashMap<String, String> entityIdsAndNames = new HashMap<>();
+    private static List<Association> associations = new ArrayList<>();
+    private static List<EntityProperty> currentEntityProperties = new ArrayList<>();
     private static Map<String, String> enumsTypes = new HashMap<>();
 
     public static void main(String[] args) {
         try {
             Element root = getElement();
 
+            // Loop over all packaged elements and add id and Name
+            // When needing a type for an Enum or Association easily access the map to get the correct type
+            entityIdsAndNames = EntityParser.parseInHashMap(root);
+//            for (Map.Entry<String, String> entry : entityIdsAndNames.entrySet()) {
+//                System.out.println(entry.getKey());
+//                System.out.println(entry.getValue());
+//            }
+
+            // Loop over all packaged elements and extract associations, so later we can determine the relations
+            associations = AssociationParser.parse(root, entityIdsAndNames);
+//            for (var ass : associations) {
+//                System.out.println(ass);
+//            }
             generateSpringBootApplicationFile();
             generatePomFile();
             generateModel(root);
@@ -53,71 +60,180 @@ public class Reader {
         Node model = root.getChildNodes().item(3);
         if (model.getNodeType() == Node.ELEMENT_NODE) {
             Element modelElement = (Element) model;
-            NodeList nodeList = modelElement.getElementsByTagName(PACKAGED_ELEMENT_TAG);
+            NodeList nodeList = modelElement.getElementsByTagName(Constants.PACKAGED_ELEMENT_TAG);
+
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
                 Element element = (Element) node;
 
                 // Name of packagedElement
-                String name = element.getAttribute(NAME_ATTR);
+                String name = element.getAttribute(Constants.NAME_ATTR);
 //                    System.out.println("Data-Name: " + name);
 
                 // Type of packagedElement
-                String type = element.getAttribute(XMI_TYPE_ATTR);
+                String type = element.getAttribute(Constants.XMI_TYPE_ATTR);
 //                    System.out.println("Data-Type: " + type + "\n");
 
                 // This if excludes creation of enums and associations as they can be standalone packagedElements
                 // enums are created in else part
-                if ((!ENUMERATION.equals(element.getAttribute(XMI_TYPE_ATTR)) && (!ASSOCIATION.equals(element.getAttribute(XMI_TYPE_ATTR))))) {
-                    entityNames.add(name);  //use class names for later when creating services and repos
+                if ((!Constants.ENUMERATION.equals(type) && (!Constants.ASSOCIATION.equals(type)))) {
 
                     // Getting fields for Classes
-                    NodeList ownedAttributeNodeList = element.getElementsByTagName(OWNED_ATTRIBUTE_TAG);
+                    NodeList ownedAttributeNodeList = element.getElementsByTagName(Constants.OWNED_ATTRIBUTE_TAG);
                     for (int j = 0; j < ownedAttributeNodeList.getLength(); j++) {
                         Node ownedAttributeNode = ownedAttributeNodeList.item(j);
                         Element ownedAttributeElement = (Element) ownedAttributeNode;
 
                         // This if excludes generating Associations inside class (Associations have type attribute)
                         // should be updated when we want to add them for fields
-                        if (ownedAttributeElement.getAttributes().getNamedItem("type") == null) {
-                            Node typeNode = ownedAttributeElement.getElementsByTagName("type").item(0);  //takes type element inside ownedAttribute
+                        if (ownedAttributeElement.getAttributes().getNamedItem(Constants.TYPE_ATTR) == null) {
+                            Node typeNode = ownedAttributeElement.getElementsByTagName(Constants.TYPE_ATTR).item(0);  //takes type element inside ownedAttribute
                             Element typeElement = (Element) typeNode;
 
-                            Node xmiExtensionNode = typeElement.getElementsByTagName("xmi:Extension").item(0);  //takes xmi:Extension inside type element
+                            Node xmiExtensionNode = typeElement.getElementsByTagName(Constants.XMI_EXTENSION).item(0);  //takes xmi:Extension inside type element
                             Element xmiExtensionElement = (Element) xmiExtensionNode;
 
-                            Node referenceExtensionNode = xmiExtensionElement.getElementsByTagName("referenceExtension").item(0); //takes referenceExtension inside xmiExtension
+                            Node referenceExtensionNode = xmiExtensionElement.getElementsByTagName(Constants.REFERENCE_EXTENSION_TAG).item(0); //takes referenceExtension inside xmiExtension
                             Element referenceExtensionElement = (Element) referenceExtensionNode;
 
-                            final var fieldTypes = Arrays.stream(referenceExtensionElement.getAttribute("referentPath").split("::"))
+                            final var fieldTypes = Arrays.stream(referenceExtensionElement.getAttribute(Constants.REFERENT_PATH_ATTR).split("::"))
                                     .map(String.class::cast)
                                     .toList();
 
 //                                System.out.println(fieldTypes.get(3));
-                            fieldsAndTypes.put(ownedAttributeElement.getAttribute("name"), fieldTypes.get(3));
+                            currentEntityProperties.add(
+                                    new EntityProperty(
+                                            fieldTypes.get(3),
+                                            ownedAttributeElement.getAttribute(Constants.NAME_ATTR),
+                                            null,
+                                            null
+                                    )
+                            );
                         } else {
                             // this section creates enum field inside class
-                            // this might be used for creating associations inside classes !?
                             if (!ownedAttributeElement.hasChildNodes()) {   // Enums don't have nodes; Associations have nodes
-                                fieldsAndTypes.put(ownedAttributeElement.getAttribute("name"), ownedAttributeElement.getAttribute("name"));
+                                // TODO: Find name of entity in hashmap
+                                currentEntityProperties.add(
+                                        new EntityProperty(
+                                                ownedAttributeElement.getAttribute(Constants.NAME_ATTR),
+                                                ownedAttributeElement.getAttribute(Constants.NAME_ATTR),
+                                                null,
+                                                null
+                                        )
+                                );
                             } else {
-                                Element lowerValue = (Element) element.getElementsByTagName("lowerValue").item(0);
-                                System.out.println(lowerValue.getAttribute("value"));
+                                // this section is used for creating associations inside classes: based on values add to fieldAndTypes
+                                String associationId = ownedAttributeElement.getAttribute(Constants.ASSOCIATION_ATTR);
+                                String associationMemberId = ownedAttributeElement.getAttribute(Constants.XMI_ID);
+
+                                Association foundAssociation = associations
+                                        .stream()
+                                        .filter(a -> associationId.equals(a.id))
+                                        .findFirst()
+                                        .orElseThrow();
+
+                                if (foundAssociation.memberOne.id.equals(associationMemberId)) {
+                                    String typeOfAssociationProperty = foundAssociation.memberOne.associationType == AssociationType.One
+                                            ? foundAssociation.memberOne.dataType
+                                            : "List<" + foundAssociation.memberOne.dataType + ">";
+
+                                    String nameOfAssociationProperty = foundAssociation.memberOne.associationType == AssociationType.One
+                                            ? foundAssociation.memberOne.dataType
+                                            : foundAssociation.memberOne.dataType + "s";
+
+                                    String association = calculateAssociation(foundAssociation.memberOne.associationType, foundAssociation.memberTwo.associationType);
+
+                                    String decorator = "";
+
+                                    if (association.equals("OneToOne")) {
+                                        decorator = "\t@OneToOne" + "\n" + "\t@JoinColumn(name=\"" + nameOfAssociationProperty.toLowerCase() + "_id" + "\")";
+                                    }
+
+                                    if (association.equals("ManyToOne")) {
+                                        decorator = "\t@ManyToOne" + "\n" + "\t@JoinColumn(name=\"" + nameOfAssociationProperty.toLowerCase() + "_id" + "\")";
+                                    }
+
+                                    if (association.equals("OneToMany")) {
+                                        decorator = "\t@OneToMany(mappedBy=\"" + name.toLowerCase() + "\")";
+                                    }
+
+                                    if (association.equals("ManyToMany")) {
+                                        decorator = "\t@ManyToMany(CascadeType.ALL)" + "\n" +
+                                                "\t@JoinTable(name=\"" + foundAssociation.memberOne.dataType.toLowerCase() + "_" + name.toLowerCase() + "\", " + "\n\t" +
+                                                "\t\tjoinColumns = @JoinColumn(name=\"" + foundAssociation.memberOne.dataType.toLowerCase() + "_id\", referencedColumnName=\"id\"), " + "\n\t" +
+                                                "\t\tinverseJoinColumns = @JoinColumn(name=\"" + name.toLowerCase() + "_id\", referencedColumnName=\"id\"))";
+                                    }
+
+                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, association, decorator));
+                                } else {
+                                    String typeOfAssociationProperty = foundAssociation.memberTwo.associationType == AssociationType.One
+                                            ? foundAssociation.memberTwo.dataType
+                                            : "List<" + foundAssociation.memberTwo.dataType + ">";
+
+                                    String nameOfAssociationProperty = foundAssociation.memberTwo.associationType == AssociationType.One
+                                            ? foundAssociation.memberTwo.dataType
+                                            : foundAssociation.memberTwo.dataType + "s";
+
+                                    String association = calculateAssociation(foundAssociation.memberTwo.associationType, foundAssociation.memberOne.associationType);
+
+                                    String decorator = "";
+
+                                    if (association.equals("OneToOne")) {
+                                        decorator = "\t@OneToOne(mappedBy=\"" + name.toLowerCase() + "\")";
+                                    }
+
+                                    if (association.equals("ManyToOne")) {
+                                        decorator = "\t@ManyToOne" + "\n" + "\t@JoinColumn(name=\"" + nameOfAssociationProperty.toLowerCase() + "_id" + "\")";
+                                    }
+
+                                    if (association.equals("OneToMany")) {
+                                        decorator = "\t@OneToMany(mappedBy=\"" + name.toLowerCase() + "\")";
+                                    }
+
+                                    if (association.equals("ManyToMany")) {
+                                        decorator = "\t@ManyToMany(mappedBy=\"" + name.toLowerCase() + "s" + "\")";
+                                    }
+
+                                    currentEntityProperties.add(new EntityProperty(typeOfAssociationProperty, nameOfAssociationProperty, association, decorator));
+                                }
                             }
                         }
                     }
-                    createEntityClass(name, fieldsAndTypes);
+//                    System.out.println("-------------");
+//                    System.out.println(name);
+//                    for (EntityProperty property: currentEntityProperties) {
+//                        System.out.println(property);
+//                    }
+//                    System.out.println("-------------");
+                    createEntityClass(name, currentEntityProperties);
+                    currentEntityProperties.clear();
                 } else {
-                    if (ENUMERATION.equals(type)) {
+                    if (Constants.ENUMERATION.equals(type)) {
                         final var enumFields = getEnumFields(element);
                         createEnum(name, enumFields);
                     } else {
                         // Prints names of Associations
-                        System.out.println(element.getAttribute("name"));
+//                        System.out.println(element.getAttribute("name"));
                     }
                 }
             }
         }
+    }
+
+    private static String calculateAssociation(AssociationType associationTypeOne, AssociationType associationTypeTwo) {
+        if (associationTypeOne == AssociationType.One && associationTypeTwo == AssociationType.One)
+            return "OneToOne";
+
+        if (associationTypeOne == AssociationType.One && associationTypeTwo == AssociationType.Many)
+            return "ManyToOne";
+
+        if (associationTypeOne == AssociationType.Many && associationTypeTwo == AssociationType.One)
+            return "OneToMany";
+
+        if (associationTypeOne == AssociationType.Many && associationTypeTwo == AssociationType.Many)
+            return "ManyToMany";
+
+        return "Error";
     }
 
     private static void generateSpringBootApplicationFile() {
@@ -144,7 +260,7 @@ public class Reader {
         return enumFields;
     }
 
-    private static void createEntityClass(final String name, final Map<String, String> fieldsAndTypes) {
+    private static void createEntityClass(final String name, final List<EntityProperty> properties) {
         String classAnnotations = "@Entity\n" +
                                   "@Getter\n" +
                                   "@Setter\n" +
@@ -156,20 +272,22 @@ public class Reader {
 
         String className = String.format("public class %s {%n", name);
 
-        List<String> classFields = fieldsAndTypes.keySet().stream()
-                        .map(key -> {
-                            final var fieldRow = "\tprivate " + fieldsAndTypes.get(key) + " " + key.toLowerCase();
-                            if ("Id".equals(key)) {
-                                generateRepository(name, fieldsAndTypes.get(key));
-                                return "\t@Id\n" + fieldRow;
-                            } else {
-                                return "\t@Column(name=\"" + key.toLowerCase() + "\")\n" + fieldRow;
-                            }
-                        })
-                        .map(String.class::cast)
-                        .toList();
+        List<String> classFields = properties.stream()
+                .map(property -> {
+                    final var fieldRow = "\tprivate " + property.type + " " + property.name.toLowerCase();
+                    if ("Id".equals(property.name) && property.association == null) {
+                        generateRepository(name, property.type);
+                        return "\t@Id\n" + fieldRow;
+                    } else if (property.association == null) {
+                        return "\t@Column(name=\"" + property.name.toLowerCase() + "\")\n" + fieldRow;
+                    } else {
+                        return property.decorator + "\n" + fieldRow;
+                    }
+                })
+                .map(String.class::cast)
+                .toList();
 
-        String classCode = classAnnotations + className + String.join(";\n", classFields) + ";\n}";
+        String classCode = classAnnotations + className + String.join(";\n\n", classFields) + ";\n}";
 
         saveToFile(classCode, name.concat("Entity"));
     }
