@@ -46,10 +46,10 @@ public class Reader {
 //            for (var ass : associations) {
 //                System.out.println(ass);
 //            }
-//            generateSpringBootApplicationFile();
-//            generatePomFile();
+            generateSpringBootApplicationFile();
+            generatePomFile();
             generateModel(root);
-//            generateCrud();
+            generateCrud();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -199,18 +199,18 @@ public class Reader {
                             }
                         }
                     }
-                    System.out.println("-------------");
-                    System.out.println(name);
-                    for (EntityProperty property: currentEntityProperties) {
-                        System.out.println(property);
-                    }
-                    System.out.println("-------------");
+//                    System.out.println("-------------");
+//                    System.out.println(name);
+//                    for (EntityProperty property: currentEntityProperties) {
+//                        System.out.println(property);
+//                    }
+//                    System.out.println("-------------");
                     createEntityClass(name, currentEntityProperties);
                     currentEntityProperties.clear();
                 } else {
                     if (Constants.ENUMERATION.equals(type)) {
                         final var enumFields = getEnumFields(element);
-//                        createEnum(name, enumFields);
+                        createEnum(name, enumFields);
                     } else {
                         // Prints names of Associations
 //                        System.out.println(element.getAttribute("name"));
@@ -276,7 +276,7 @@ public class Reader {
                 .map(property -> {
                     final var fieldRow = "\tprivate " + property.type + " " + property.name.toLowerCase();
                     if ("Id".equals(property.name) && property.association == null) {
-//                        generateRepository(name, property.name);
+                        generateRepository(name, property.type);
                         return "\t@Id\n" + fieldRow;
                     } else if (property.association == null) {
                         return "\t@Column(name=\"" + property.name.toLowerCase() + "\")\n" + fieldRow;
