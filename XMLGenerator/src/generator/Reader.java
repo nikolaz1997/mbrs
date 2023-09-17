@@ -1,7 +1,7 @@
 package generator;
 
 import generator.application.AppGenerator;
-import generator.application.XmlSchemaParser;
+import generator.application.XmlSchemaReader;
 import generator.associations.Association;
 import generator.associations.AssociationParser;
 import generator.entities.EntityParser;
@@ -14,7 +14,7 @@ public class Reader {
 
     public static void main(String[] args) {
         try {
-            Element root = XmlSchemaParser.getRootElement();
+            Element root = XmlSchemaReader.getRootElement();
 
             // Loop over all packaged elements and add id and name of all entities
             // When needing a type for a Class, Enum or Association easily access the map to get the correct type
@@ -23,6 +23,7 @@ public class Reader {
             // Loop over all packaged elements and extract associations, so later we can determine the relations
             List<Association> associations = AssociationParser.parse(root, entityIdsAndNames);
 
+            // App generation
             AppGenerator.generateSpringBootApplicationFile();
             AppGenerator.generatePomFile();
             AppGenerator.generateModel(root, entityIdsAndNames, associations);

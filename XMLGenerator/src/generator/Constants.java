@@ -8,7 +8,6 @@ public class Constants {
     public static final String PACKAGED_ELEMENT_TAG = "packagedElement";
     public static final String OWNED_ATTRIBUTE_TAG = "ownedAttribute";
     public static final String REFERENCE_EXTENSION_TAG = "referenceExtension";
-    public static final String LOWER_VALUE_TAG = "lowerValue";
     public static final String UPPER_VALUE_TAG = "upperValue";
     public static final String MEMBER_END_TAG = "memberEnd";
 
