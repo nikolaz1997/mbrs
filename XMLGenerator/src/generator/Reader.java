@@ -364,11 +364,21 @@ public class Reader {
 
         String className = String.format("public class %s" + "Service {%n", entityName);
 
+        String repositoryType = String.format("%sRepository", entityName);
+        String repositoryName = String.format("%sRepository", entityName.toLowerCase());
+
+        String constructor = String.format("""
+                
+                \tpublic %sService(%s %s) {
+                \t     this.%s = %s;
+                \t}
+                """, entityName, repositoryType, repositoryName, repositoryName, repositoryName);
+
         String code = String.format("\tprivate final %sRepository %sRepository;%n", entityName, entityName.toLowerCase());
 
         String comment = "\t// TODO: Add more service functions that are required by your logic.";
 
-        String classCode = classAnnotations + className + code + comment + "\n}";
+        String classCode = classAnnotations + className + code + constructor + comment + "\n}";
 
         saveToFile(classCode, entityName.concat("Service"));
     }
@@ -381,7 +391,17 @@ public class Reader {
 
         String className = String.format("public class %s" + "Controller {%n", entityName);
 
-        String code = String.format("\n\tprivate final %sService %sService;%n", entityName, entityName.toLowerCase());
+        String serviceType = String.format("%sService", entityName);
+        String serviceName = String.format("%sService", entityName.toLowerCase());
+
+        String code = String.format("\n\tprivate final %s %s;%n", serviceType, serviceName);
+
+        String constructor = String.format("""
+                
+                \tpublic %sController(%s %s) {
+                \t     this.%s = %s;
+                \t}
+                """, entityName, serviceType, serviceName, serviceName, serviceName);
 
         String codeComment = "\n\t\t// TODO: Implement logic that is convenient for your controller method\n";
 
@@ -401,7 +421,7 @@ public class Reader {
 
         String comment = "\t// TODO: Adjust method annotations and add more controller functions that are required by your logic.";
 
-        String classCode = classAnnotations + className + comment + code + basicLogicCode + "\n}";
+        String classCode = classAnnotations + className + comment + code + constructor + basicLogicCode + "\n}";
 
         saveToFile(classCode, entityName.concat("Controller"));
     }
