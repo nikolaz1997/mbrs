@@ -9,11 +9,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 
-public class XmlSchemaParser {
+public class XmlSchemaReader {
     public static Element getRootElement() throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse("./src/schema2.xml");
+        Document document = builder.parse("./src/schema.xml");
         document.getDocumentElement().normalize();
 
         return document.getDocumentElement();
