@@ -364,11 +364,21 @@ public class Reader {
 
         String className = String.format("public class %s" + "Service {%n", entityName);
 
+        String repositoryType = String.format("%sRepository", entityName);
+        String repositoryName = String.format("%sRepository", entityName.toLowerCase());
+
+        String constructor = String.format("""
+                
+                \tpublic %sService(%s %s) {
+                \t     this.%s = %s;
+                \t}
+                """, entityName, repositoryType, repositoryName, repositoryName, repositoryName);
+
         String code = String.format("\tprivate final %sRepository %sRepository;%n", entityName, entityName.toLowerCase());
 
         String comment = "\t// TODO: Add more service functions that are required by your logic.";
 
-        String classCode = classAnnotations + className + code + comment + "\n}";
+        String classCode = classAnnotations + className + code + constructor + comment + "\n}";
 
         saveToFile(classCode, entityName.concat("Service"));
     }
