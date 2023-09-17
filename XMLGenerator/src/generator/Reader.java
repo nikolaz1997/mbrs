@@ -26,8 +26,8 @@ public class Reader {
             // App generation
             AppGenerator.generateSpringBootApplicationFile();
             AppGenerator.generatePomFile();
-            AppGenerator.generateModel(root, entityIdsAndNames, associations);
-            AppGenerator.generateCrud();
+            AppGenerator.generateModelsAndRepositories(root, entityIdsAndNames, associations);
+            AppGenerator.generateControllersAndServices();
         } catch (Exception e) {
             e.printStackTrace();
         }
