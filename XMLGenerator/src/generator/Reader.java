@@ -246,7 +246,7 @@ public class Reader {
                 "\t\tSpringApplication.run(" + appName + "Application.class, args);\n" +
                 "\t}" +
                 "\n}";
-        saveToFile(className + classCode, appName + "Application");
+        FileSaver.save(className + classCode, appName + "Application");
     }
 
     private static List<String> getEnumFields(final Element element) {
@@ -290,13 +290,13 @@ public class Reader {
 
         String classCode = classAnnotations + className + String.join(";\n\n", classFields) + ";\n}";
 
-        saveToFile(classCode, name.concat("Entity"));
+        FileSaver.save(classCode, name.concat("Entity"));
     }
 
     private static void createEnum(final String name, final List<String> enumFields) {
 
         String enumName = String.format("public enum %s {%n", name);
-        saveToFile(enumName + "\t" + String.join(", ", enumFields) + "\n}", name);
+        FileSaver.save(enumName + "\t" + String.join(", ", enumFields) + "\n}", name);
     }
 
     private static Element getElement() throws ParserConfigurationException, SAXException, IOException {
@@ -353,7 +353,7 @@ public class Reader {
 
         String classCode = classAnnotations + className + comment + "\n}";
 
-        saveToFile(classCode, entityName.concat("Repository"));
+        FileSaver.save(classCode, entityName.concat("Repository"));
     }
 
     private static void generateService(final String entityName) {
@@ -380,7 +380,7 @@ public class Reader {
 
         String classCode = classAnnotations + className + code + constructor + comment + "\n}";
 
-        saveToFile(classCode, entityName.concat("Service"));
+        FileSaver.save(classCode, entityName.concat("Service"));
     }
 
     private static void generateController(final String entityName) {
@@ -423,14 +423,8 @@ public class Reader {
 
         String classCode = classAnnotations + className + comment + code + constructor + basicLogicCode + "\n}";
 
-        saveToFile(classCode, entityName.concat("Controller"));
+        FileSaver.save(classCode, entityName.concat("Controller"));
     }
 
-    private static void saveToFile(final String code, final String fileName) {
-        try (FileWriter writer = new FileWriter(fileName.concat(".java"))) {
-            writer.write(code);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
 }
