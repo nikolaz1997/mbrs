@@ -1,7 +1,11 @@
 package generator.application;
 
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import generator.Constants;
 import generator.FileSaver;
+import generator.Reader;
 import generator.associations.Association;
 import generator.associations.AssociationType;
 import generator.entities.EntityProperty;
@@ -10,6 +14,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -20,21 +25,17 @@ public class AppGenerator {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Provide name for the application:");
         String appName = scanner.nextLine();
-        String className = "@SpringBootApplication" + "\npublic class " + appName + "Application {\n";
-        String classCode = "\tpublic static void main(String[] args) {\n" +
-                "\t\tSpringApplication.run(" + appName + "Application.class, args);\n" +
-                "\t}" +
-                "\n}";
-        FileSaver.save(className + classCode, appName + "Application", "java");
+
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("appName", appName);
+
+        generateWithFreeMarker("spring_app.ftl", dataModel, "output", appName + "Application.java");
     }
 
     public static void generatePomFile() {
-        try {
-            String pomContent = Files.readString(Paths.get("./src/pom_content"));
-            FileSaver.save(pomContent, "pom", "xml");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Map<String, Object> dataModel = new HashMap<>();
+
+        generateWithFreeMarker("pom_content.ftl", dataModel, "output", "pom.xml");
     }
 
     public static void generateModelsAndRepositories(final Element root, HashMap<String, String> entityIdsAndNames, List<Association> associations) {
@@ -198,7 +199,7 @@ public class AppGenerator {
     }
 
     public static void generateControllersAndServices() {
-        String baseDirectory = "./";
+        String baseDirectory = "./output/model";
         String partialClassName = "Entity";
         String javaExtension = ".java";
 
@@ -224,73 +225,18 @@ public class AppGenerator {
 
 
     private static void generateService(final String entityName) {
-        String classAnnotations = """
-                @Service
-                @RequiredArgsConstructor
-                """;
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("className", entityName);
 
-        String className = String.format("public class %s" + "Service {%n", entityName);
-
-        String repositoryType = String.format("%sRepository", entityName);
-        String repositoryName = String.format("%sRepository", entityName.toLowerCase());
-
-        String constructor = String.format("""
-                                
-                \tpublic %sService(%s %s) {
-                \t     this.%s = %s;
-                \t}
-                """, entityName, repositoryType, repositoryName, repositoryName, repositoryName);
-
-        String code = String.format("\tprivate final %sRepository %sRepository;%n", entityName, entityName.toLowerCase());
-
-        String comment = "\t// TODO: Add more service functions that are required by your logic.";
-
-        String classCode = classAnnotations + className + code + constructor + comment + "\n}";
-
-        FileSaver.save(classCode, entityName.concat("Service"), "java");
+        generateWithFreeMarker("service_class.ftl", dataModel, "output/service", entityName + "Service.java");
     }
 
     private static void generateController(final String entityName) {
-        String classAnnotations =
-                "@RestController\n" +
-                        "@RequiredArgsConstructor\n" +
-                        "@RequestMapping(value = \"/api/" + entityName.toLowerCase().concat("s") + "\")\n";
 
-        String className = String.format("public class %s" + "Controller {%n", entityName);
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("className", entityName);
 
-        String serviceType = String.format("%sService", entityName);
-        String serviceName = String.format("%sService", entityName.toLowerCase());
-
-        String code = String.format("\n\tprivate final %s %s;%n", serviceType, serviceName);
-
-        String constructor = String.format("""
-                                
-                \tpublic %sController(%s %s) {
-                \t     this.%s = %s;
-                \t}
-                """, entityName, serviceType, serviceName, serviceName, serviceName);
-
-        String codeComment = "\n\t\t// TODO: Implement logic that is convenient for your controller method\n";
-
-        String basicLogicCode =
-                "\n\t@GetMapping()\n" +
-                        "\t@ResponseStatus(HttpStatus.OK)\n" +
-                        "\tpublic List<" + entityName + "Entity> get" + entityName + "s() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
-                        "\n\t@PostMapping()\n" +
-                        "\t@ResponseStatus(HttpStatus.CREATED)\n" +
-                        "\tpublic " + entityName + "Entity create" + entityName + "() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
-                        "\n\t@PutMapping()\n" +
-                        "\t@ResponseStatus(HttpStatus.NO_CONTENT)\n" +
-                        "\tpublic " + entityName + "Entity update" + entityName + "() { " + codeComment + "\n\t\treturn null;\n\t}\n" +
-                        "\n\t@DeleteMapping()\n" +
-                        "\t@ResponseStatus(HttpStatus.NO_CONTENT)\n" +
-                        "\tpublic void delete" + entityName + "() {}";
-
-        String comment = "\t// TODO: Adjust method annotations and add more controller functions that are required by your logic.";
-
-        String classCode = classAnnotations + className + comment + code + constructor + basicLogicCode + "\n}";
-
-        FileSaver.save(classCode, entityName.concat("Controller"), "java");
+        generateWithFreeMarker("controller_class.ftl", dataModel, "output/controller", entityName + "Controller.java");
     }
 
     private static String calculateAssociation(AssociationType associationTypeOne, AssociationType associationTypeTwo) {
@@ -310,25 +256,19 @@ public class AppGenerator {
     }
 
     private static void createEntityClass(final String name, final List<EntityProperty> properties) {
-        String classAnnotations = "@Entity\n" +
-                "@Getter\n" +
-                "@Setter\n" +
-                "@ToString\n" +
-                "@AllArgsConstructor\n" +
-                "@NoArgsConstructor\n" +
-                "@Builder(toBuilder = true)\n" +
-                "@Table(name=\"" + name.toLowerCase() + "\")\n";
 
-        String className = String.format("public class %s {%n", name);
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("tableName", name.toLowerCase());
+        dataModel.put("className", name);
 
         List<String> classFields = properties.stream()
                 .map(property -> {
                     final var fieldRow = "\tprivate " + property.type + " " + property.name.toLowerCase();
                     if ("Id".equals(property.name) && property.association == null) {
                         generateRepository(name, property.type);
-                        return "\t@Id\n" + fieldRow;
+                        return "@Id\n" + fieldRow;
                     } else if (property.association == null) {
-                        return "\t@Column(name=\"" + property.name.toLowerCase() + "\")\n" + fieldRow;
+                        return "@Column(name=\"" + property.name.toLowerCase() + "\")\n" + fieldRow;
                     } else {
                         return property.decorator + "\n" + fieldRow;
                     }
@@ -336,26 +276,26 @@ public class AppGenerator {
                 .map(String.class::cast)
                 .toList();
 
-        String classCode = classAnnotations + className + String.join(";\n\n", classFields) + ";\n}";
+        dataModel.put("classFields", classFields);
 
-        FileSaver.save(classCode, name.concat("Entity"), "java");
+        generateWithFreeMarker("entity_class.ftl", dataModel, "output/model",name + "Entity.java");
     }
 
     private static void createEnum(final String name, final List<String> enumFields) {
-        String enumName = String.format("public enum %s {%n", name);
-        FileSaver.save(enumName + "\t" + String.join(", ", enumFields) + "\n}", name, "java");
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("enumName", name);
+        dataModel.put("enumFields", enumFields);
+
+        generateWithFreeMarker("enum.ftl", dataModel, "output/model", name + "Enum.java");
     }
 
     private static void generateRepository(final String entityName, final String keyType) {
-        String classAnnotations = "@Repository\n";
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("repositoryName", entityName);
+        dataModel.put("className", entityName);
+        dataModel.put("keyType", keyType);
 
-        String className = String.format("public interface %sRepository extends JpaRepository<%sEntity, %s> {%n", entityName, entityName, keyType);
-
-        String comment = "\t// TODO: Add more repository functions that are required by your logic.";
-
-        String classCode = classAnnotations + className + comment + "\n}";
-
-        FileSaver.save(classCode, entityName.concat("Repository"), "java");
+        generateWithFreeMarker("repository_class.ftl", dataModel, "output/repository", "Repository.java");
     }
 
     private static List<String> getEnumFields(final Element element) {
@@ -368,5 +308,29 @@ public class AppGenerator {
             enumFields.add(enumElement.getAttribute("name").toUpperCase());
         }
         return enumFields;
+    }
+
+    private static void generateWithFreeMarker(final String templateName,
+                                               final Map<String, Object> dataModel,
+                                               final String outputDirectory,
+                                               final String fileName) {
+        try {
+            Configuration cfg = new Configuration(Configuration.VERSION_2_3_32);
+
+            cfg.setClassForTemplateLoading(Reader.class, "/templates");
+
+            Template template = cfg.getTemplate(templateName);
+
+            File outputDir = new File(outputDirectory);
+            outputDir.mkdirs();
+
+            // Process the template with the data model
+            FileWriter writer = new FileWriter(new File(outputDir, fileName));
+
+            template.process(dataModel, writer);
+            writer.close();
+        } catch (IOException | TemplateException e) {
+            e.printStackTrace();
+        }
     }
 }
