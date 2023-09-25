@@ -295,7 +295,7 @@ public class AppGenerator {
         dataModel.put("className", entityName);
         dataModel.put("keyType", keyType);
 
-        generateWithFreeMarker("repository_class.ftl", dataModel, "output/repository", "Repository.java");
+        generateWithFreeMarker("repository_class.ftl", dataModel, "output/repository", entityName + "Repository.java");
     }
 
     private static List<String> getEnumFields(final Element element) {
