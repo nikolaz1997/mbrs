@@ -30,6 +30,7 @@ public class AppGenerator {
         dataModel.put("appName", appName);
 
         generateWithFreeMarker("spring_app.ftl", dataModel, "output", appName + "Application.java");
+        generateWithFreeMarker("application_properties.ftl", dataModel, "output", "ApplicationProperties.yml");
     }
 
     public static void generatePomFile() {
