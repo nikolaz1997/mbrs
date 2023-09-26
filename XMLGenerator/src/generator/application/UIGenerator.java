@@ -1,5 +1,7 @@
 package generator.application;
 
+import java.util.Map;
+
 public class UIGenerator {
     public static void generateApp() {
         TemplateGenerator.generateWithFreeMarker("app.ftl", null, "output/frontend", "App.jsx");
@@ -11,5 +13,9 @@ public class UIGenerator {
 
     public static void generateHomeFile() {
         TemplateGenerator.generateWithFreeMarker("home.ftl", null, "output/frontend", "Home.jsx");
+    }
+
+    public static void generateRouterFile(Map<String, Object> dataModel) {
+        TemplateGenerator.generateWithFreeMarker("router.ftl", dataModel, "output/frontend", "Router.jsx");
     }
 }

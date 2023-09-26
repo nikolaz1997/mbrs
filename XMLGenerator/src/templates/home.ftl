@@ -1,4 +1,4 @@
-import "../../theme/GlobalStyle.css"
+import "./styles.css"
 
 const Home = () => {
   return (

@@ -11,6 +11,7 @@ import org.w3c.dom.Element;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Reader {
 
@@ -29,12 +30,15 @@ public class Reader {
             AppGenerator.generateSpringBootApplicationFile();
             AppGenerator.generatePomFile();
             HashMap<String, List<EntityProperty>> entitiesWithProperties = AppGenerator.generateModelsAndRepositories(root, entityIdsAndNames, associations);
+            Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("classes", entitiesWithProperties);
             AppGenerator.generateControllersAndServices();
 
             // UI generation
             UIGenerator.generateApp();
             UIGenerator.generateCssFile();
             UIGenerator.generateHomeFile();
+            UIGenerator.generateRouterFile(dataModel);
         } catch (Exception e) {
             e.printStackTrace();
         }
