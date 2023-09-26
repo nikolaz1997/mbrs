@@ -33,6 +33,7 @@ public class Reader {
 
             // UI generation
             UIGenerator.generateApp();
+            UIGenerator.generateCssFile();
         } catch (Exception e) {
             e.printStackTrace();
         }
