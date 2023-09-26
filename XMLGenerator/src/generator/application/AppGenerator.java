@@ -188,6 +188,7 @@ public class AppGenerator {
                         }
                     }
                     createEntityClass(name, currentEntityProperties);
+                    createDtoClass(name, currentEntityProperties);
                     currentEntityProperties.clear();
                 } else if (Constants.ENUMERATION.equals(type)) {
                     final var enumFields = getEnumFields(element);
@@ -279,6 +280,25 @@ public class AppGenerator {
         dataModel.put("classFields", classFields);
 
         generateWithFreeMarker("entity_class.ftl", dataModel, "output/model",name + "Entity.java");
+    }
+
+    private static void createDtoClass(final String name, final List<EntityProperty> properties) {
+
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("tableName", name.toLowerCase());
+        dataModel.put("className", name);
+
+        List<String> classFields = properties.stream()
+                .map(property -> {
+                    final var fieldRow = "\tprivate " + property.type + " " + property.name.toLowerCase();
+                    return fieldRow;
+                })
+                .map(String.class::cast)
+                .toList();
+
+        dataModel.put("classFields", classFields);
+
+        generateWithFreeMarker("dto_class.ftl", dataModel, "output/dto",name + "DTO.java");
     }
 
     private static void createEnum(final String name, final List<String> enumFields) {
