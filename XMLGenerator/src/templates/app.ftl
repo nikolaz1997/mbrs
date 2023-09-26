@@ -1,6 +1,7 @@
-import Header from "./components/Header"
-import AppRouter from "./containers/router/index"
-import {BrowserRouter} from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
+
+import Header from "./Header.jsx"
+import AppRouter from "./Router.jsx"
 
 function App() {
   return (

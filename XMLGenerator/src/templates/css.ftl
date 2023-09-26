@@ -156,14 +156,14 @@
 	margin-bottom: 30px;
 }
 
-.Table-wrapper {
+.table-wrapper {
 	width: 85vw;
 	padding: 15px;
 	background-color: #424853;
 	color: white;
 }
 
-.Table-header {
+.table-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -172,7 +172,7 @@
 	height: 70px;
 }
 
-.Table-heading {
+.table-heading {
 	font-size: 25px;
 	font-weight: bold;
 }
@@ -205,7 +205,7 @@ p {
 	color: rgb(44, 44, 44);
 }
 
-.Table-button {
+.table-button {
 	width: 90px;
 	height: 30px;
 	border-radius: 4px;

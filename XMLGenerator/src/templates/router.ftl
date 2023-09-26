@@ -1,10 +1,11 @@
 import {Switch, Route, Redirect} from "react-router-dom";
 import Home from "./Home.jsx"
+
 <#list classes as class>
 	<#if class??>
-import ${class?cap_first}Create from ".${class?cap_first}Create"
-import ${class?cap_first}Update from ".${class?cap_first}Update"
-import ${class?cap_first}List from ".${class?cap_first}List"
+import ${class?cap_first}Create from "./${class?cap_first}Create.jsx"
+import ${class?cap_first}Update from "./${class?cap_first}Update.jsx"
+import ${class?cap_first}List from "./${class?cap_first}List.jsx"
 	</#if>
 </#list>
 
