@@ -132,15 +132,15 @@ public class AppGenerator {
                                     }
 
                                     if (association.equals("ManyToOne")) {
-                                        decorator = "\t@ManyToOne" + "\n" + "\t@JoinColumn(name=\"" + nameOfAssociationProperty.toLowerCase() + "_id" + "\")";
+                                        decorator = "@ManyToOne" + "\n" + "\t@JoinColumn(name=\"" + nameOfAssociationProperty.toLowerCase() + "_id" + "\")";
                                     }
 
                                     if (association.equals("OneToMany")) {
-                                        decorator = "\t@OneToMany(mappedBy=\"" + name.toLowerCase() + "\")";
+                                        decorator = "@OneToMany(mappedBy=\"" + name.toLowerCase() + "\")";
                                     }
 
                                     if (association.equals("ManyToMany")) {
-                                        decorator = "\t@ManyToMany(CascadeType.ALL)" + "\n" +
+                                        decorator = "@ManyToMany(CascadeType.ALL)" + "\n" +
                                                 "\t@JoinTable(name=\"" + foundAssociation.memberOne.dataType.toLowerCase() + "_" + name.toLowerCase() + "\", " + "\n\t" +
                                                 "\t\tjoinColumns = @JoinColumn(name=\"" + foundAssociation.memberOne.dataType.toLowerCase() + "_id\", referencedColumnName=\"id\"), " + "\n\t" +
                                                 "\t\tinverseJoinColumns = @JoinColumn(name=\"" + name.toLowerCase() + "_id\", referencedColumnName=\"id\"))";
@@ -164,15 +164,15 @@ public class AppGenerator {
                                     }
 
                                     if (association.equals("ManyToOne")) {
-                                        decorator = "\t@ManyToOne" + "\n" + "\t@JoinColumn(name=\"" + nameOfAssociationProperty.toLowerCase() + "_id" + "\")";
+                                        decorator = "@ManyToOne" + "\n" + "\t@JoinColumn(name=\"" + nameOfAssociationProperty.toLowerCase() + "_id" + "\")";
                                     }
 
                                     if (association.equals("OneToMany")) {
-                                        decorator = "\t@OneToMany(mappedBy=\"" + name.toLowerCase() + "\")";
+                                        decorator = "@OneToMany(mappedBy=\"" + name.toLowerCase() + "\")";
                                     }
 
                                     if (association.equals("ManyToMany")) {
-                                        decorator = "\t@ManyToMany(mappedBy=\"" + name.toLowerCase() + "s" + "\")";
+                                        decorator = "@ManyToMany(mappedBy=\"" + name.toLowerCase() + "s" + "\")";
                                     }
 
                                 }
@@ -271,6 +271,7 @@ public class AppGenerator {
                     }
                 })
                 .map(String.class::cast)
+                .map(p -> p + ";\n")
                 .toList();
 
         dataModel.put("classFields", classFields);
@@ -285,10 +286,7 @@ public class AppGenerator {
         dataModel.put("className", name);
 
         List<String> classFields = properties.stream()
-                .map(property -> {
-                    final var fieldRow = "\tprivate " + property.type + " " + property.name.toLowerCase();
-                    return fieldRow;
-                })
+                .map(property -> "private " + property.type + " " + property.name.toLowerCase())
                 .map(String.class::cast)
                 .toList();
 

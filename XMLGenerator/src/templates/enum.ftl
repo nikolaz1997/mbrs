@@ -1,5 +1,5 @@
 public enum ${enumName} {
-    <#list enumFields as field>
-        ${field},
-    </#list>
+<#list enumFields as field>
+    ${field},
+</#list>
 }

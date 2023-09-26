@@ -4,7 +4,7 @@
 @NoArgsConstructor
 public class ${className}DTO {
 
-    <#list classFields as classField>
-        ${classField};
-    </#list>
+<#list classFields as classField>
+    ${classField};
+</#list>
 }

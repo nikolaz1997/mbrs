@@ -8,7 +8,7 @@
 @Table(name="${tableName}")
 public class ${className}Entity {
 
-    <#list classFields as classField>
-        ${classField};
-    </#list>
+<#list classFields as classField>
+    ${classField}
+</#list>
 }
