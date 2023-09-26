@@ -43,6 +43,7 @@ public class Reader {
             UIGenerator.generateCssFile();
             UIGenerator.generateHomeFile();
             UIGenerator.generateRouterFile(dataModel);
+            UIGenerator.generateHeaderFile(dataModel);
         } catch (Exception e) {
             e.printStackTrace();
         }

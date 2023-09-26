@@ -18,4 +18,8 @@ public class UIGenerator {
     public static void generateRouterFile(Map<String, Object> dataModel) {
         TemplateGenerator.generateWithFreeMarker("router.ftl", dataModel, "output/frontend", "Router.jsx");
     }
+
+    public static void generateHeaderFile(Map<String, Object> dataModel) {
+        TemplateGenerator.generateWithFreeMarker("header.ftl", dataModel, "output/frontend", "Header.jsx");
+    }
 }

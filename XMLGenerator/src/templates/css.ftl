@@ -77,7 +77,7 @@
 	background-color: #4af0b9;
 }
 
-.Header {
+.header {
 	background-color: #424853;
 	height: 10vh;
 	width: 100vw;
@@ -87,7 +87,7 @@
 	align-items: center;
 }
 
-.Menu {
+.menu {
 	height: 10vh;
 	width: 150px;
 	display: flex;
@@ -99,7 +99,7 @@
 	font-weight: bold;
 }
 
-.Menu-dropdown {
+.menu-dropdown {
 	background-color: #242527;
 	width: 250px;
 	align-self: flex-end;
@@ -111,16 +111,16 @@
 	right: 10px;
 }
 
-.Menu-dropdown::-webkit-scrollbar {
+.menu-dropdown::-webkit-scrollbar {
 	display: none;
 }
 
-.Menu-dropdown {
+.menu-dropdown {
 	-ms-overflow-style: none; /* IE and Edge */
 	scrollbar-width: none; /* Firefox */
 }
 
-.Menu-dropdown-item {
+.menu-dropdown-item {
 	background-color: #242527;
 	width: 230px;
 	display: flex;
@@ -136,7 +136,7 @@
 	cursor: pointer;
 }
 
-.Menu-dropdown-item:hover {
+.menu-dropdown-item:hover {
 	background-color: #4af0b9;
 	color: black;
 	font-weight: 600;
