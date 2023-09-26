@@ -5,6 +5,7 @@ import generator.application.XmlSchemaReader;
 import generator.associations.Association;
 import generator.associations.AssociationParser;
 import generator.entities.EntityParser;
+import generator.entities.EntityProperty;
 import org.w3c.dom.Element;
 
 import java.util.HashMap;
@@ -26,7 +27,7 @@ public class Reader {
             // App generation
             AppGenerator.generateSpringBootApplicationFile();
             AppGenerator.generatePomFile();
-            AppGenerator.generateModelsAndRepositories(root, entityIdsAndNames, associations);
+            HashMap<String, List<EntityProperty>> entitiesWithProperties = AppGenerator.generateModelsAndRepositories(root, entityIdsAndNames, associations);
             AppGenerator.generateControllersAndServices();
         } catch (Exception e) {
             e.printStackTrace();

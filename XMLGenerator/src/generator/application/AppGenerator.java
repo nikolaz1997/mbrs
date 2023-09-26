@@ -30,8 +30,8 @@ public class AppGenerator {
         TemplateGenerator.generateWithFreeMarker("pom_content.ftl", dataModel, "output", "pom.xml");
     }
 
-    public static void generateModelsAndRepositories(final Element root, HashMap<String, String> entityIdsAndNames, List<Association> associations) {
-        List<EntityProperty> currentEntityProperties = new ArrayList<>();
+    public static HashMap<String, List<EntityProperty>> generateModelsAndRepositories(final Element root, HashMap<String, String> entityIdsAndNames, List<Association> associations) {
+        HashMap<String, List<EntityProperty>> entitiesWithProperties = new HashMap<>();
 
         Node model = root.getChildNodes().item(3);
         if (model.getNodeType() == Node.ELEMENT_NODE) {
@@ -51,6 +51,7 @@ public class AppGenerator {
                 // This if excludes creation of enums and associations as they can be standalone packagedElements
                 // enums are created in else part
                 if (Constants.CLASS.equals(type)) {
+                    List<EntityProperty> currentEntityProperties = new ArrayList<>();
 
                     // Getting fields for Classes
                     NodeList ownedAttributeNodeList = element.getElementsByTagName(Constants.OWNED_ATTRIBUTE_TAG);
@@ -181,6 +182,7 @@ public class AppGenerator {
                     }
                     createEntityClass(name, currentEntityProperties);
                     createDtoClass(name, currentEntityProperties);
+                    entitiesWithProperties.put(name, new ArrayList<>(currentEntityProperties));
                     currentEntityProperties.clear();
                 } else if (Constants.ENUMERATION.equals(type)) {
                     final var enumFields = getEnumFields(element);
@@ -189,6 +191,8 @@ public class AppGenerator {
                 // Associations were handled before model generation as to have access to them
             }
         }
+
+        return entitiesWithProperties;
     }
 
     public static void generateControllersAndServices() {
