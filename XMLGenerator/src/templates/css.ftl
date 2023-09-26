@@ -1,4 +1,4 @@
-.Main-conteiner {
+.main-container {
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -142,7 +142,7 @@
 	font-weight: 600;
 }
 
-.Content-wrapper {
+.content-wrapper {
 	width: 50vw;
 	display: flex;
 	flex-direction: column;

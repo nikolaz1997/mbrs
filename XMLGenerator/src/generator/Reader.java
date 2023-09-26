@@ -34,6 +34,7 @@ public class Reader {
             // UI generation
             UIGenerator.generateApp();
             UIGenerator.generateCssFile();
+            UIGenerator.generateHomeFile();
         } catch (Exception e) {
             e.printStackTrace();
         }
