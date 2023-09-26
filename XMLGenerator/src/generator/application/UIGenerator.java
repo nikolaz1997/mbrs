@@ -8,4 +8,8 @@ public class UIGenerator {
     public static void generateCssFile() {
         TemplateGenerator.generateWithFreeMarker("css.ftl", null, "output/frontend", "styles.css");
     }
+
+    public static void generateHomeFile() {
+        TemplateGenerator.generateWithFreeMarker("home.ftl", null, "output/frontend", "Home.jsx");
+    }
 }
