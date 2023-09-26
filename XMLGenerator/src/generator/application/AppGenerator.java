@@ -1,11 +1,6 @@
 package generator.application;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import generator.Constants;
-import generator.FileSaver;
-import generator.Reader;
 import generator.associations.Association;
 import generator.associations.AssociationType;
 import generator.entities.EntityProperty;
@@ -14,10 +9,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class AppGenerator {
@@ -29,14 +20,14 @@ public class AppGenerator {
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("appName", appName);
 
-        generateWithFreeMarker("spring_app.ftl", dataModel, "output", appName + "Application.java");
-        generateWithFreeMarker("application_properties.ftl", dataModel, "output", "ApplicationProperties.yml");
+        TemplateGenerator.generateWithFreeMarker("spring_app.ftl", dataModel, "output", appName + "Application.java");
+        TemplateGenerator.generateWithFreeMarker("application_properties.ftl", dataModel, "output", "ApplicationProperties.yml");
     }
 
     public static void generatePomFile() {
         Map<String, Object> dataModel = new HashMap<>();
 
-        generateWithFreeMarker("pom_content.ftl", dataModel, "output", "pom.xml");
+        TemplateGenerator.generateWithFreeMarker("pom_content.ftl", dataModel, "output", "pom.xml");
     }
 
     public static void generateModelsAndRepositories(final Element root, HashMap<String, String> entityIdsAndNames, List<Association> associations) {
@@ -230,7 +221,7 @@ public class AppGenerator {
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("className", entityName);
 
-        generateWithFreeMarker("service_class.ftl", dataModel, "output/service", entityName + "Service.java");
+        TemplateGenerator.generateWithFreeMarker("service_class.ftl", dataModel, "output/service", entityName + "Service.java");
     }
 
     private static void generateController(final String entityName) {
@@ -238,7 +229,7 @@ public class AppGenerator {
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("className", entityName);
 
-        generateWithFreeMarker("controller_class.ftl", dataModel, "output/controller", entityName + "Controller.java");
+        TemplateGenerator.generateWithFreeMarker("controller_class.ftl", dataModel, "output/controller", entityName + "Controller.java");
     }
 
     private static String calculateAssociation(AssociationType associationTypeOne, AssociationType associationTypeTwo) {
@@ -280,7 +271,7 @@ public class AppGenerator {
 
         dataModel.put("classFields", classFields);
 
-        generateWithFreeMarker("entity_class.ftl", dataModel, "output/model",name + "Entity.java");
+        TemplateGenerator.generateWithFreeMarker("entity_class.ftl", dataModel, "output/model",name + "Entity.java");
     }
 
     private static void createDtoClass(final String name, final List<EntityProperty> properties) {
@@ -299,7 +290,7 @@ public class AppGenerator {
 
         dataModel.put("classFields", classFields);
 
-        generateWithFreeMarker("dto_class.ftl", dataModel, "output/dto",name + "DTO.java");
+        TemplateGenerator.generateWithFreeMarker("dto_class.ftl", dataModel, "output/dto",name + "DTO.java");
     }
 
     private static void createEnum(final String name, final List<String> enumFields) {
@@ -307,7 +298,7 @@ public class AppGenerator {
         dataModel.put("enumName", name);
         dataModel.put("enumFields", enumFields);
 
-        generateWithFreeMarker("enum.ftl", dataModel, "output/model", name + "Enum.java");
+        TemplateGenerator.generateWithFreeMarker("enum.ftl", dataModel, "output/model", name + "Enum.java");
     }
 
     private static void generateRepository(final String entityName, final String keyType) {
@@ -316,7 +307,7 @@ public class AppGenerator {
         dataModel.put("className", entityName);
         dataModel.put("keyType", keyType);
 
-        generateWithFreeMarker("repository_class.ftl", dataModel, "output/repository", entityName + "Repository.java");
+        TemplateGenerator.generateWithFreeMarker("repository_class.ftl", dataModel, "output/repository", entityName + "Repository.java");
     }
 
     private static List<String> getEnumFields(final Element element) {
@@ -329,29 +320,5 @@ public class AppGenerator {
             enumFields.add(enumElement.getAttribute("name").toUpperCase());
         }
         return enumFields;
-    }
-
-    private static void generateWithFreeMarker(final String templateName,
-                                               final Map<String, Object> dataModel,
-                                               final String outputDirectory,
-                                               final String fileName) {
-        try {
-            Configuration cfg = new Configuration(Configuration.VERSION_2_3_32);
-
-            cfg.setClassForTemplateLoading(Reader.class, "/templates");
-
-            Template template = cfg.getTemplate(templateName);
-
-            File outputDir = new File(outputDirectory);
-            outputDir.mkdirs();
-
-            // Process the template with the data model
-            FileWriter writer = new FileWriter(new File(outputDir, fileName));
-
-            template.process(dataModel, writer);
-            writer.close();
-        } catch (IOException | TemplateException e) {
-            e.printStackTrace();
-        }
     }
 }
