@@ -52,15 +52,10 @@ public class Reader {
                 // Retrieve properties for the current class
                 List<EntityProperty> properties = entitiesWithProperties.get(className);
 
-                // Create a list to store property details (type and name)
-                List<Map<String, String>> propertyList = new ArrayList<>();
-
-               // Add logic for [ {name: "", type: String} ]
-
                 // Add the property list to the data model
-                dataModelClass.put("properties", propertyList);
+                dataModelClass.put("properties", properties);
 
-                System.out.println("className " + className + " properties " + propertyList);
+                System.out.println("className " + className + " properties " + properties);
                 UIGenerator.generateEntityListFile(dataModelClass, className);
             }
 

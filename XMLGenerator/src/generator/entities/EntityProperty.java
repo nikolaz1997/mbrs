@@ -13,6 +13,38 @@ public class EntityProperty {
         this.decorator = decorator;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAssociation() {
+        return association;
+    }
+
+    public void setAssociation(String association) {
+        this.association = association;
+    }
+
+    public String getDecorator() {
+        return decorator;
+    }
+
+    public void setDecorator(String decorator) {
+        this.decorator = decorator;
+    }
+
     @Override
     public String toString() {
         return "EntityProperty{" +
