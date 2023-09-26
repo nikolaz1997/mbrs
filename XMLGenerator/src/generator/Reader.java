@@ -44,6 +44,26 @@ public class Reader {
             UIGenerator.generateHomeFile();
             UIGenerator.generateRouterFile(dataModel);
             UIGenerator.generateHeaderFile(dataModel);
+
+            for (String className : entitiesWithProperties.keySet()) {
+                Map<String, Object> dataModelClass = new HashMap<>();
+                dataModelClass.put("className", className);
+
+                // Retrieve properties for the current class
+                List<EntityProperty> properties = entitiesWithProperties.get(className);
+
+                // Create a list to store property details (type and name)
+                List<Map<String, String>> propertyList = new ArrayList<>();
+
+               // Add logic for [ {name: "", type: String} ]
+
+                // Add the property list to the data model
+                dataModelClass.put("properties", propertyList);
+
+                System.out.println("className " + className + " properties " + propertyList);
+                UIGenerator.generateEntityListFile(dataModelClass, className);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
