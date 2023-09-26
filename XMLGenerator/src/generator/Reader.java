@@ -55,8 +55,8 @@ public class Reader {
                 // Add the property list to the data model
                 dataModelClass.put("properties", properties);
 
-                System.out.println("className " + className + " properties " + properties);
                 UIGenerator.generateEntityListFile(dataModelClass, className);
+                UIGenerator.generateEntityCreateForm(dataModelClass, className);
             }
 
         } catch (Exception e) {

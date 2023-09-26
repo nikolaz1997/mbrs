@@ -26,4 +26,8 @@ public class UIGenerator {
     public static void generateEntityListFile(Map<String, Object> dataModel, String className) {
         TemplateGenerator.generateWithFreeMarker("listView.ftl", dataModel, "output/frontend", className + "ListView.jsx");
     }
+
+    public static void generateEntityCreateForm(Map<String, Object> dataModel, String className) {
+        TemplateGenerator.generateWithFreeMarker("formCreate.ftl", dataModel, "output/frontend", className + "Create.jsx");
+    }
 }

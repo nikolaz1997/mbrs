@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import ".styles.css";
+import "./styles.css";
 
 const REGEX = /[A-Z][a-z]+/g;
 

@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import axios from 'axios';
 
-import { api } from "./environment";
+const api = 'http://localhost:8080/';
 
-import ".styles.css"
+import "./styles.css"
 
 <#if className??>const ${className?cap_first}FormList = () => {
   const history = useHistory();

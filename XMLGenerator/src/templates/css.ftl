@@ -7,7 +7,7 @@
 	background: linear-gradient(to right, #ffcc00 0%, #ff33cc 100%);
 }
 
-.Form {
+.form {
 	height: auto;
 	width: 400px;
 	padding: 20px;
@@ -19,14 +19,14 @@
 	margin-bottom: 20px;
 }
 
-.Label {
+.label {
 	font-size: 16px;
 	color: white;
 	margin-bottom: 5px;
 	margin-top: 5px;
 }
 
-.Input {
+.input {
 	border-radius: 8px;
 	height: 25px;
 	margin-bottom: 5px;
@@ -36,11 +36,11 @@
 	outline: none;
 }
 
-.Input:focus {
+.input:focus {
 	border-color: #4af0b9;
 }
 
-.Button {
+.button {
 	width: 200px;
 	height: 30px;
 	border-radius: 8px;
@@ -55,7 +55,7 @@
 	cursor: pointer;
 }
 
-.Multiselect {
+.multiselect {
 	padding: 7px;
 	background-color: white;
 	border-radius: 8px;
@@ -64,7 +64,7 @@
 	overflow-y: scroll;
 }
 
-.Multiselect-item {
+.multiselect-item {
 	padding: 3px;
 	padding-bottom: 3px;
 	margin-top: 3px;
