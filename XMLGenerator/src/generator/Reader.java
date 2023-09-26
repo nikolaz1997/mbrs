@@ -34,7 +34,7 @@ public class Reader {
             for (String entityName : entitiesWithProperties.keySet()) {
                 entityNames.add(entityName);
             }
-            
+
             dataModel.put("classes", entityNames);
             AppGenerator.generateControllersAndServices();
 
