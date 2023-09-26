@@ -13,7 +13,7 @@ public class ${className}Controller {
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public List'<'${className}Entity> get${className}s() {
+    public List<${className}Entity> get${className}s() {
         // TODO: Implement logic that is convenient for your controller method
 
         return null;
@@ -37,5 +37,7 @@ public class ${className}Controller {
 
     @DeleteMapping()
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete${className}() {}
+    public void delete${className}() {
+        // TODO: Implement logic that is convenient for your controller method
+    }
 }

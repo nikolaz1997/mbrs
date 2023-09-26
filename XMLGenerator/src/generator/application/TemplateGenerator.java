@@ -11,10 +11,11 @@ import java.io.IOException;
 import java.util.Map;
 
 public class TemplateGenerator {
-    public static void generateWithFreeMarker(final String templateName,
-                                               final Map<String, Object> dataModel,
-                                               final String outputDirectory,
-                                               final String fileName) {
+    public static void generateWithFreeMarker(
+            final String templateName,
+            final Map<String, Object> dataModel,
+            final String outputDirectory,
+            final String fileName) {
         try {
             Configuration cfg = new Configuration(Configuration.VERSION_2_3_32);
 
