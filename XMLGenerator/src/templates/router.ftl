@@ -1,10 +1,10 @@
 import {Switch, Route, Redirect} from "react-router-dom";
 import Home from "./Home.jsx"
-<#list classes as className, classProperties>
+<#list classes as class>
 	<#if class??>
-import ${className?cap_first}Create from ".${className?cap_first}Create"
-import ${className?cap_first}Update from ".${className?cap_first}Update"
-import ${className?cap_first}List from ".${className?cap_first}List"
+import ${class?cap_first}Create from ".${class?cap_first}Create"
+import ${class?cap_first}Update from ".${class?cap_first}Update"
+import ${class?cap_first}List from ".${class?cap_first}List"
 	</#if>
 </#list>
 
@@ -12,11 +12,11 @@ const Router = () => {
     return (
       <Switch>
         <Route exact path="/home" component={Home} />
-        <#list classes as className, classProperties>
+        <#list classes as class>
 			<#if class??>
-		<Route exact path="/${className?lower_case}/list" component={${className?cap_first}List} />
-		<Route exact path="/${className?lower_case}/create" component={${className?cap_first}Create} />
-		<Route exact path="/${className?lower_case}/update/:id" component={${className?cap_first}Update} />
+		<Route exact path="/${class?lower_case}/list" component={${class?cap_first}List} />
+		<Route exact path="/${class?lower_case}/create" component={${class?cap_first}Create} />
+		<Route exact path="/${class?lower_case}/update/:id" component={${class?cap_first}Update} />
 			</#if>
 		</#list>
         <Redirect to="/home" />

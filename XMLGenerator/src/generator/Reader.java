@@ -9,9 +9,7 @@ import generator.entities.EntityParser;
 import generator.entities.EntityProperty;
 import org.w3c.dom.Element;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Reader {
 
@@ -31,7 +29,13 @@ public class Reader {
             AppGenerator.generatePomFile();
             HashMap<String, List<EntityProperty>> entitiesWithProperties = AppGenerator.generateModelsAndRepositories(root, entityIdsAndNames, associations);
             Map<String, Object> dataModel = new HashMap<>();
-            dataModel.put("classes", entitiesWithProperties);
+            List<String> entityNames = new ArrayList<>();
+
+            for (String entityName : entitiesWithProperties.keySet()) {
+                entityNames.add(entityName);
+            }
+            
+            dataModel.put("classes", entityNames);
             AppGenerator.generateControllersAndServices();
 
             // UI generation
