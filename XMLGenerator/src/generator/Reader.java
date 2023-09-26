@@ -1,6 +1,7 @@
 package generator;
 
 import generator.application.AppGenerator;
+import generator.application.UIGenerator;
 import generator.application.XmlSchemaReader;
 import generator.associations.Association;
 import generator.associations.AssociationParser;
@@ -29,6 +30,9 @@ public class Reader {
             AppGenerator.generatePomFile();
             HashMap<String, List<EntityProperty>> entitiesWithProperties = AppGenerator.generateModelsAndRepositories(root, entityIdsAndNames, associations);
             AppGenerator.generateControllersAndServices();
+
+            // UI generation
+            UIGenerator.generateApp();
         } catch (Exception e) {
             e.printStackTrace();
         }
