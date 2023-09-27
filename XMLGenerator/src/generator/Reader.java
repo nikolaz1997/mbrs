@@ -36,21 +36,7 @@ public class Reader {
             UIGenerator.generateHomeFile();
             UIGenerator.generateRouterFile(entitiesWithProperties.keySet().stream().toList());
             UIGenerator.generateHeaderFile(entitiesWithProperties.keySet().stream().toList());
-
-            for (String className : entitiesWithProperties.keySet()) {
-                Map<String, Object> dataModelClass = new HashMap<>();
-                dataModelClass.put("className", className);
-
-                // Retrieve properties for the current class
-                List<EntityProperty> properties = entitiesWithProperties.get(className);
-
-                // Add the property list to the data model
-                dataModelClass.put("properties", properties);
-
-                UIGenerator.generateEntityListFile(dataModelClass, className);
-                UIGenerator.generateEntityCreateForm(dataModelClass, className);
-                UIGenerator.generateEntityUpdateForm(dataModelClass, className);
-            }
+            UIGenerator.generateEntitiesListFileAndForms(entitiesWithProperties);
 
         } catch (Exception e) {
             e.printStackTrace();

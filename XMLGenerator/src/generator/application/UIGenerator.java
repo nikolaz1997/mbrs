@@ -1,5 +1,7 @@
 package generator.application;
 
+import generator.entities.EntityProperty;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,15 +31,20 @@ public class UIGenerator {
         TemplateGenerator.generateWithFreeMarker("header.ftl", dataModel, "output/frontend", "Header.jsx");
     }
 
-    public static void generateEntityListFile(Map<String, Object> dataModel, String className) {
-        TemplateGenerator.generateWithFreeMarker("listView.ftl", dataModel, "output/frontend", className + "ListView.jsx");
-    }
+    public static void generateEntitiesListFileAndForms(HashMap<String, List<EntityProperty>> entitiesWithProperties) {
+        for (String className : entitiesWithProperties.keySet()) {
+            Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("className", className);
 
-    public static void generateEntityCreateForm(Map<String, Object> dataModel, String className) {
-        TemplateGenerator.generateWithFreeMarker("formCreate.ftl", dataModel, "output/frontend", className + "Create.jsx");
-    }
+            // Retrieve properties for the current class
+            List<EntityProperty> properties = entitiesWithProperties.get(className);
 
-    public static void generateEntityUpdateForm(Map<String, Object> dataModel, String className) {
-        TemplateGenerator.generateWithFreeMarker("formUpdate.ftl", dataModel, "output/frontend", className + "Update.jsx");
+            // Add the property list to the data model
+            dataModel.put("properties", properties);
+
+            TemplateGenerator.generateWithFreeMarker("listView.ftl", dataModel, "output/frontend", className + "ListView.jsx");
+            TemplateGenerator.generateWithFreeMarker("formCreate.ftl", dataModel, "output/frontend", className + "Create.jsx");
+            TemplateGenerator.generateWithFreeMarker("formUpdate.ftl", dataModel, "output/frontend", className + "Update.jsx");
+        }
     }
 }
