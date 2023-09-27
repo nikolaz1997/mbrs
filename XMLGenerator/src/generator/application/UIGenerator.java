@@ -30,4 +30,8 @@ public class UIGenerator {
     public static void generateEntityCreateForm(Map<String, Object> dataModel, String className) {
         TemplateGenerator.generateWithFreeMarker("formCreate.ftl", dataModel, "output/frontend", className + "Create.jsx");
     }
+
+    public static void generateEntityUpdateForm(Map<String, Object> dataModel, String className) {
+        TemplateGenerator.generateWithFreeMarker("formUpdate.ftl", dataModel, "output/frontend", className + "Update.jsx");
+    }
 }

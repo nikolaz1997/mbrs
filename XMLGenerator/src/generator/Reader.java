@@ -57,6 +57,7 @@ public class Reader {
 
                 UIGenerator.generateEntityListFile(dataModelClass, className);
                 UIGenerator.generateEntityCreateForm(dataModelClass, className);
+                UIGenerator.generateEntityUpdateForm(dataModelClass, className);
             }
 
         } catch (Exception e) {
