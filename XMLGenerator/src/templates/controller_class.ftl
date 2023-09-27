@@ -13,7 +13,7 @@ public class ${className}Controller {
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public List<${className}Entity> get${className}s() {
+    public List<${className}DTO> get${className}s() {
         // TODO: Implement logic that is convenient for your controller method
 
         return null;
@@ -21,7 +21,7 @@ public class ${className}Controller {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public ${className}Entity create${className}() {
+    public ${className}DTO create${className}() {
         // TODO: Implement logic that is convenient for your controller method
 
         return null;
@@ -29,7 +29,7 @@ public class ${className}Controller {
 
     @PutMapping()
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ${className}Entity update${className}() {
+    public ${className}DTO update${className}() {
         // TODO: Implement logic that is convenient for your controller method
 
         return null;
