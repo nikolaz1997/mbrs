@@ -28,22 +28,14 @@ public class Reader {
             AppGenerator.generateSpringBootApplicationFile();
             AppGenerator.generatePomFile();
             HashMap<String, List<EntityProperty>> entitiesWithProperties = AppGenerator.generateModelsAndRepositories(root, entityIdsAndNames, associations);
-            Map<String, Object> dataModel = new HashMap<>();
-            List<String> entityNames = new ArrayList<>();
-
-            for (String entityName : entitiesWithProperties.keySet()) {
-                entityNames.add(entityName);
-            }
-
-            dataModel.put("classes", entityNames);
             AppGenerator.generateControllersAndServices();
 
             // UI generation
             UIGenerator.generateApp();
             UIGenerator.generateCssFile();
             UIGenerator.generateHomeFile();
-            UIGenerator.generateRouterFile(dataModel);
-            UIGenerator.generateHeaderFile(dataModel);
+            UIGenerator.generateRouterFile(entitiesWithProperties.keySet().stream().toList());
+            UIGenerator.generateHeaderFile(entitiesWithProperties.keySet().stream().toList());
 
             for (String className : entitiesWithProperties.keySet()) {
                 Map<String, Object> dataModelClass = new HashMap<>();
